@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-
+    
 public class ParmBind
 {
     public enum KindTypes
@@ -115,12 +115,18 @@ public partial class ParameterBody
 
 public partial class ParmSet
 {
-    public static List<ParmSet> FromJson(string json) => JsonConvert.DeserializeObject<List<ParmSet>>(json);
+    public static List<ParmSet> FromJson(string json)
+    {
+        return JsonConvert.DeserializeObject<List<ParmSet>>(json);
+    }
 }
 
 public static class Serialize
 {
-    public static string ToJson<T>(this T self) => JsonConvert.SerializeObject(self);
+    public static string ToJson<T>(this T self)
+    {
+        return JsonConvert.SerializeObject(self);
+    }
 }
 
 internal static class Converter
@@ -137,7 +143,10 @@ internal static class Converter
 
 internal class ParseStringConverter : JsonConverter
 {
-    public override bool CanConvert(Type t) => t == typeof(long) || t == typeof(long?);
+    public override bool CanConvert(Type t)
+    {
+        return t == typeof(long) || t == typeof(long?);
+    }
 
     public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
     {

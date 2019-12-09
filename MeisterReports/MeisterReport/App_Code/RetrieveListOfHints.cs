@@ -33,4 +33,3 @@ public class Enum
     [JsonProperty("VALUE")]
     public string value { get; set; }
 }
-

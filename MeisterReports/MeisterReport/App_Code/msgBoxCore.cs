@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-public class MessageBoxCore
+﻿public class MessageBoxCore
 {
     public static string MessageBoxButtonHtml = @"<input type='button' value='{0}' class='{1}' onclick='{2}' />";
 

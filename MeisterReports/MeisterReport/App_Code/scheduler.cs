@@ -1,9 +1,6 @@
-﻿    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
-
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
+using System.Linq;
 public partial class Scheduler
 {
     [JsonProperty("columns_named")]
@@ -52,7 +49,10 @@ public partial class Scheduler
     {
         Parameters = new List<Parameter>();
     }
-    public static List<Scheduler> FromJson(string json) => JsonConvert.DeserializeObject<List<Scheduler>>(json);
+    public static List<Scheduler> FromJson(string json)
+    {
+        return JsonConvert.DeserializeObject<List<Scheduler>>(json);
+    }
 }
 
 public partial class SchedulerResponse
@@ -75,7 +75,8 @@ public partial class SchedulerResponse
 
 public partial class SchedulerResponse
 {
-    public static List<SchedulerResponse> FromJson(string json) => JsonConvert.DeserializeObject<List<SchedulerResponse>>(json);
+    public static List<SchedulerResponse> FromJson(string json)
+    {
+        return JsonConvert.DeserializeObject<List<SchedulerResponse>>(json);
+    }
 }
-
-

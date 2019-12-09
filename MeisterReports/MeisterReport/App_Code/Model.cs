@@ -1,12 +1,7 @@
-﻿using MeisterCore;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
+using MeisterReporting;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
-using static MeisterCore.Support.MeisterSupport;
 
 /// <summary>
 /// Summary description for Model
@@ -39,6 +34,8 @@ public class Model
 
     public Controller Controller { get; private set; }
 
+    public MyReportsResponse myReports { get; set; }
+    public VariantResponse variants { get; set; }
     public Model()
     {
         Dict = new Dictionary<Calls, string>();
@@ -97,7 +94,8 @@ public class Model
     {
         SchedulerSet sc = new SchedulerSet();
         sc.ReportGuid = guid;
-        dynamic d = Controller.RetriveAsDynamic(Dict[Calls.Retriever],sc);
+        dynamic d = Controller.ExecuteRequest<dynamic, SchedulerSet>(Dict[Calls.Retriever], sc);
+       // dynamic d = Controller.RetriveAsDynamic(Dict[Calls.Retriever],sc);
         JObject jo = null;
         // Special case under OData 4 - the dynamic is a list 
         if (Controller.IsOD4)
@@ -128,12 +126,15 @@ public class Model
 
     public void MyReports(string user)
     {
-        SchedulerSet sc = new SchedulerSet();
-        sc.UserId = user;
-        ReportData = new ReportData();
-        ReportData.ReportDatum = new List<ReportDatum>();
-        ReportDatum rd = Controller.RetrieveEntity<ReportDatum>(Dict[Calls.Retriever], sc);
-        ReportData.ReportDatum.Add(rd);
+        //SchedulerSet sc = new SchedulerSet();
+        //sc.UserId = user;
+        //ReportData = new ReportData();
+        //ReportData.ReportDatum = new List<ReportDatum>();
+        //ReportDatum d = Controller.ExecuteRequest<ReportDatum, SchedulerSet>(Dict[Calls.Retriever], sc);
+        //ReportData.ReportDatum.Add(d);
+        MyReportsRequest req = new MyReportsRequest();
+        req.userName = user;
+        myReports = Controller.ExecuteRequest<MyReportsResponse, MyReportsRequest>(@"Meister.Reporting.MyReports", req);
     }
 
     public void VariantContents(string program, string variant)
@@ -145,9 +146,12 @@ public class Model
     }
     public void FindVariants(string program)
     {
-        VariantQuery vq = new VariantQuery();
-        vq.ReportName = program;
-        Variants = Controller.RetrieveEntity<VariantsSet>(Dict[Calls.Variants], vq);
+        //VariantQuery vq = new VariantQuery();
+        //vq.ReportName = program;
+        //Variants = Controller.RetrieveEntity<VariantsSet>(Dict[Calls.Variants], vq);
+        VariantRequest req = new VariantRequest();
+        req.reportName = program;
+        variants = Controller.ExecuteRequest<VariantResponse, VariantRequest>(@"Meister.Reporting.Report.Variants", req);
     }
 
     public void SaveVariant(NewVariant nv)

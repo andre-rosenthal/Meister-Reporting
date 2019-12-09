@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Configuration;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
@@ -14,9 +9,7 @@ using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using static MeisterCore.Support.MeisterSupport;
 using MeisterCore;
-using Newtonsoft.Json.Linq;
 
 /// <summary>
 /// Summary description for Controller
@@ -27,8 +20,15 @@ public class Controller
     public bool IsOD4 { get; set; }
     public Controller()
     {
-        
+
     }
+    private AuthenticationHeaderValue headerValue { get; set; }
+    private Uri Gateway { get; set; }
+    private string GatewayClient { get; set; }
+    private MeisterCore.Support.MeisterSupport.MeisterExtensions me { get; set;}
+    private MeisterCore.Support.MeisterSupport.MeisterOptions mo { get; set; }
+    private MeisterCore.Support.MeisterSupport.RuntimeOptions ro { get; set; }
+    private MeisterCore.Support.MeisterSupport.AuthenticationModes am { get; set; }
     protected readonly string _endpoint;
     protected Resource<dynamic, dynamic> resource;
     public EndPoint endPoint { get; set; }
@@ -44,16 +44,25 @@ public class Controller
     {
         string bae = userid + ":" + psw;
         var byteArray = Encoding.ASCII.GetBytes(bae);
-        AuthenticationHeaderValue headerValue = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-        MeisterExtensions me = MeisterExtensions.RemoveNullsAndEmptyArrays;
-        MeisterOptions mo = MeisterOptions.None;
+        headerValue = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+        me = MeisterCore.Support.MeisterSupport.MeisterExtensions.RemoveNullsAndEmptyArrays;
+        mo = MeisterCore.Support.MeisterSupport.MeisterOptions.None;
         if (od4)
-            mo = MeisterOptions.UseODataV4;
-        RuntimeOptions ro = RuntimeOptions.ExecuteSync;
-        AuthenticationModes am = AuthenticationModes.Basic;
+            mo = MeisterCore.Support.MeisterSupport.MeisterOptions.UseODataV4;
+        ro = MeisterCore.Support.MeisterSupport.RuntimeOptions.ExecuteSync;
+        Gateway = gatewayUri;
+        GatewayClient = sapclient;
+        MeisterCore.Support.MeisterSupport.AuthenticationModes am = MeisterCore.Support.MeisterSupport.AuthenticationModes.Basic;
         resource = new Resource<dynamic, dynamic>(gatewayUri, headerValue, sapclient, me, mo, am, ro);
         return resource.Authenticate();
     }
+
+    public T ExecuteRequest<T,R>( string ep, R req)
+    {
+        Resource<R, T> resource = new Resource<R, T>(Gateway, headerValue, GatewayClient, me, mo, am, ro);
+        return ToEntity<T>(resource.Execute(ep, req));
+    }
+    
     public dynamic RetriveAsDynamic(string ep, dynamic d)
     {
         return resource.Execute(ep, d);       
@@ -283,7 +292,7 @@ public class Controller
         string psw = string.Empty;
         uid = ConfigurationManager.AppSettings["UserName"];
         psw = ConfigurationManager.AppSettings["Password"];
-        var uap = $"{uid}:{psw}";
+        string uap = string.Format("{0},{1}",uid,psw);
         var byteArray = Encoding.ASCII.GetBytes(uap);
         return new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
     }

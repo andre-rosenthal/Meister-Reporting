@@ -65,8 +65,8 @@
                     <asp:DropDownList ID="ddpDemo" runat="server" AutoPostBack="True" OnSelectedIndexChanged="ddpDemo_SelectedIndexChanged" CssClass="auto-style1">
                         <asp:ListItem>RM07RESLH</asp:ListItem>
                         <asp:ListItem>S_ALR_87012291</asp:ListItem>
-                        <asp:ListItem>S_ALR_87012326</asp:ListItem>
                         <asp:ListItem>S_ALR_87012332</asp:ListItem>
+                        <asp:ListItem>S_ALR_87012326</asp:ListItem>
                         <asp:ListItem>SD_SALES_ORDERS_VIEW</asp:ListItem>
                     </asp:DropDownList>
 

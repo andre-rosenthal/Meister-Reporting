@@ -9,6 +9,7 @@ using System.Web;
 using System.Web.Services;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Ionic.Zip;
 
 public partial class Main : System.Web.UI.Page
 {
@@ -342,7 +343,7 @@ public partial class Main : System.Web.UI.Page
         else
             s.WithMetadata = "X";
         foreach (GridViewRow g0 in GridView2.Rows)
-            if (IsValid(g0.Cells[4].Text) || IsValid(g0.Cells[5].Text))
+            if (IsItValid(g0.Cells[4].Text) || IsItValid(g0.Cells[5].Text))
             {
                 Parameter ps = new Parameter();
                 ps.Selname = g0.Cells[1].Text;
@@ -350,9 +351,9 @@ public partial class Main : System.Web.UI.Page
                 ps.Kind = SAPKind(g0.Cells[2].Text);
                 ps.Option = g0.Cells[4].Text;
                 ps.Low = g0.Cells[5].Text;
-                if (IsValid(g0.Cells[5].Text))
+                if (IsItValid(g0.Cells[5].Text))
                 {
-                    if (IsValid(g0.Cells[6].Text))
+                    if (IsItValid(g0.Cells[6].Text))
                     {
                         if (GetOptions(true).Contains(ps.Option))
                             ps.High = g0.Cells[6].Text;
@@ -420,7 +421,7 @@ public partial class Main : System.Web.UI.Page
     }
 
 
-    private bool IsValid(string s)
+    private bool IsItValid(string s)
     {
         return s != string.Empty && s != "&nbsp;" ? true : false;
     }
@@ -459,7 +460,7 @@ public partial class Main : System.Web.UI.Page
         var v = parmBind.ElementAt(GridView2.EditIndex);
         if (v != null)
         {
-            if (IsValid(GrabGridUpdate(gvr, 6)))
+            if (IsItValid(GrabGridUpdate(gvr, 6)))
             {
                 if (!GetOptions(true).Contains(GrabGridUpdate(gvr, 4)))
                 {
@@ -524,47 +525,91 @@ public partial class Main : System.Web.UI.Page
             Button7.Enabled = false;
             Model.ReportRetriever(GetUserName());
             reps = new List<BindReportsByUser>();
-            if (Model.ReportData != null)
+            if (Model.myReports != null)
             {
-                foreach (var l1 in Model.ReportData.ReportDatum)
+                foreach( var rd in Model.myReports.myReports)
                 {
-                    var br = new BindReportsByUser();
-                    br.UUID = l1.Pky;
-                    DateTime dt = FromStringDT(l1.Date, l1.Time);
-                    br.Date = String.Format("{0:yyyy/MM/dd}", dt);
-                    br.Time = String.Format("{0:HH:mm tt}", dt);
-                    br.ReportName = l1.Report.Name;
-                    br.Description = l1.Report.Description;
-                    switch (l1.Status)
+                    var bru = new BindReportsByUser();
+                    bru.UUID = rd.pky;
+                    DateTime dt = FromStringDT(rd.dateStamp, rd.timeStamp);
+                    bru.Date = String.Format("{0:yyyy/MM/dd}", dt);
+                    bru.Time = String.Format("{0:HH:mm tt}", dt);
+                    bru.ReportName = rd.report.name;
+                    if (!string.IsNullOrEmpty(rd.report.description))
+                        bru.Description = rd.report.description;
+                    else
+                        bru.Description = "Generated Report";
+                    switch (rd.report.status)
                     {
                         case "S":
                             {
-                                br.Status = "Scheduled";
+                                bru.Status = "Scheduled";
                                 break;
                             }
                         case "R":
                             {
-                                br.Status = "Running";
+                                bru.Status = "Running";
                                 break;
                             }
                         case "F":
                             {
-                                br.Status = "Finished";
+                                bru.Status = "Finished";
                                 break;
                             }
                         case "A":
                             {
-                                br.Status = "Aborted";
+                                bru.Status = "Aborted";
                                 break;
                             }
                         default:
                             break;
                     }
-                    reps.Add(br);
+                    reps.Add(bru);
                 }
                 GridView3.Caption = "Reports found for user";
                 BindData<List<BindReportsByUser>>(GridView3, reps, SesReports);
             }
+            //if (Model.ReportData != null)
+            //{
+            //    foreach (var l1 in Model.ReportData.ReportDatum)
+            //    {
+            //        var br = new BindReportsByUser();
+            //        br.UUID = l1.Pky;
+            //        DateTime dt = FromStringDT(l1.Date, l1.Time);
+            //        br.Date = String.Format("{0:yyyy/MM/dd}", dt);
+            //        br.Time = String.Format("{0:HH:mm tt}", dt);
+            //        br.ReportName = l1.Report.Name;
+            //        br.Description = l1.Report.Description;
+            //        switch (l1.Status)
+            //        {
+            //            case "S":
+            //                {
+            //                    br.Status = "Scheduled";
+            //                    break;
+            //                }
+            //            case "R":
+            //                {
+            //                    br.Status = "Running";
+            //                    break;
+            //                }
+            //            case "F":
+            //                {
+            //                    br.Status = "Finished";
+            //                    break;
+            //                }
+            //            case "A":
+            //                {
+            //                    br.Status = "Aborted";
+            //                    break;
+            //                }
+            //            default:
+            //                break;
+            //        }
+            //        reps.Add(br);
+            //    }
+            //    GridView3.Caption = "Reports found for user";
+            //    BindData<List<BindReportsByUser>>(GridView3, reps, SesReports);
+            //}
             ReportsShown = true;
             Session[SesShowRep] = true;
             Button3.Text = Hide;
@@ -847,7 +892,7 @@ public partial class Main : System.Web.UI.Page
         ParmChanges = Session[ParmsAltered] as List<string>;
         foreach (GridViewRow g0 in GridView2.Rows)
             if (ParmChanges.Contains(g0.Cells[1].Text))
-                if (IsValid(g0.Cells[5].Text) || IsValid(g0.Cells[6].Text))
+                if (IsItValid(g0.Cells[5].Text) || IsItValid(g0.Cells[6].Text))
                 {
                     if (Model.VariantValuesSet != null)
                         {
@@ -866,7 +911,7 @@ public partial class Main : System.Web.UI.Page
                     vc.Kind = SAPKind(g0.Cells[2].Text);
                     vc.Option = g0.Cells[4].Text;
                     vc.Low = g0.Cells[5].Text;
-                    if (IsValid(g0.Cells[6].Text))
+                    if (IsItValid(g0.Cells[6].Text))
                         vc.High = g0.Cells[6].Text;
                     else
                         vc.High = vc.Low;
@@ -1166,7 +1211,7 @@ public partial class Main : System.Web.UI.Page
             Scheduler s = DoWork(true);
             a.Name = TextBox1.Text;
             a.USERID = s.Username;
-            if (IsValid(TextBox4.Text))
+            if (IsItValid(TextBox4.Text))
                 a.Variant = TextBox4.Text;
             else
                 a.Variant = Session[VarNameSaved] as string;
