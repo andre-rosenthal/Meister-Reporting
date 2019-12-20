@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MeisterReporting;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -120,6 +121,7 @@ public partial class Login : System.Web.UI.Page
     {
         Model m = new Model();
         string us = RetrieveContent(this.UserName.Text, userName);
+        us = us.ToUpper();
         string pw = RetrieveContent(this.Password.Text, password);
         string cl = RetrieveContent(this.SAPClient.Text, sap_client);
         string od = RetrieveContent(this.OD4Mode.Checked.ToString(), od4,false,true);

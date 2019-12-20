@@ -7,16 +7,10 @@ using System.Web;
 namespace MeisterReporting
 {
     /// <summary>
-    /// Summary description for VariantResponse
+    /// Summary description for UpsertVariantResponse
     /// </summary>
-    public partial class VariantResponse
+    public class UpsertVariantResponse
     {
-        [JsonProperty("report")]
-        public string Report { get; set; }
-
-        [JsonProperty("variants")]
-        public List<Variant> Variants { get; set; }
-
         [JsonProperty("messages")]
         public List<Message> Messages { get; set; }
     }

@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Web;
 
@@ -9,37 +11,74 @@ namespace MeisterReporting
     /// <summary>
     /// Summary description for MyReportsResponse
     /// </summary>
-   
-    [JsonObject("myReports")]
-    public class MyReportsResponse
-{
+
+    public partial class MyReportsResponse
+    {
         [JsonProperty("myReports")]
-        public List<Myreport> myReports { get; set; }
+        public List<MyReport> MyReports { get; set; }
+
         [JsonProperty("messages")]
-        public List<Message> messages { get; set; }
+        public List<Message> Messages { get; set; }
     }
 
-    [JsonObject("myReport")]
-    public class Myreport
+    public partial class MyReport
     {
-        public string pky { get; set; }
-        public string userName { get; set; }
-        public string dateStamp { get; set; }
-        public string timeStamp { get; set; }
-        public Report report { get; set; }
+        [JsonProperty("pky")]
+        public string Pky { get; set; }
+
+        [JsonProperty("userName")]
+        public string UserName { get; set; }
+
+        [JsonProperty("dateStamp")]
+        public string DateStamp { get; set; }
+
+        [JsonProperty("timeStamp")]
+        public string TimeStamp { get; set; }
+
+        [JsonProperty("report")]
+        public Report Report { get; set; }
     }
 
-    [JsonObject("report")]
-    public class Report
+    public partial class Report
     {
-        public string name { get; set; }
-        public string description { get; set; }
-        public string mode { get; set; }
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
+        [JsonProperty("mode")]
+        public string Mode { get; set; }
+
         [JsonProperty("parameters")]
-        public List<Parameter> parameters { get; set; }
-        public string variant { get; set; }
-        public bool withMetadata { get; set; }
-        public bool columnsNamed { get; set; }
-        public string status { get; set; }
+        public List<Parameter> Parameters { get; set; }
+
+        [JsonProperty("variant")]
+        public string Variant { get; set; }
+
+        [JsonProperty("withMetadata")]
+        public bool WithMetadata { get; set; }
+
+        [JsonProperty("columnsNamed")]
+        public bool ColumnsNamed { get; set; }
+
+        [JsonProperty("status")]
+        public string Status { get; set; }
+    }
+
+    public partial class MyReportsResponse
+    {
+        public static List<MyReportsResponse> FromJson(string json)
+        {
+            return JsonConvert.DeserializeObject<List<MyReportsResponse>>(json, Converter.Settings);
+        }
+    }
+
+    public static partial class Serialize
+    {
+        public static string ToJson(this List<MyReportsResponse> self)
+        {
+            return JsonConvert.SerializeObject(self, MeisterReporting.Converter.Settings);
+        }
     }
 }

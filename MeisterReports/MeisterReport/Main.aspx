@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" Debug="true" AutoEventWireup="true" CodeFile ="Main.aspx.cs" Inherits="Main"  %>
+﻿<%@ Page Language="C#" Debug="true" AutoEventWireup="true" CodeFile ="Main.aspx.cs" Inherits="MeisterReporting.Main"  %>
 
 <!DOCTYPE html>
 
