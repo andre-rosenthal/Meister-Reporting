@@ -25,7 +25,7 @@ namespace MeisterReporting
         public List<string> ParmChanges { get; set; }
         private bool DemoMode = false;
         public Model Model { get; set; }
-        public Visibilities MyVisibilities { get; set; }
+        public UISupport MyVisibilities { get; set; }
         public bool ReportsShown { get; set; }
         public bool showSchedule { get; set; }
         public bool LookupShown { get; set; }
@@ -38,7 +38,7 @@ namespace MeisterReporting
         private const string SesShowRep = "ShownReports";
         private const string gridView2 = "ParmsList";
         private const string SesHasParm = "HasParmChosen";
-        private const string SesMatches = "Matches";
+        private const string gridView1 = "Matches";
         private const string gridView3 = "Reports";
         private const string ListOfVariants = "Variants";
         private const string ValidH = "ValidH";
@@ -89,8 +89,8 @@ namespace MeisterReporting
                 Calendar1.SelectedDate = Calendar1.TodaysDate;
                 SetDemo();
                 Session[ParmsAltered] = new List<string>();
-                MyVisibilities = new Visibilities();
-                MyVisibilities.SetOperations(Visibilities.Operations.gurnist);
+                MyVisibilities = new UISupport();
+                MyVisibilities.SetOperations(UISupport.Operations.gurnist);
             }
             else
             {
@@ -207,19 +207,10 @@ namespace MeisterReporting
             Label10.Visible = false;
             if (TextBox1.Text != string.Empty)
             {
-                MyReportsRequest req = new MyReportsRequest();
-                req.userName = TextBox1.Text.ToUpper();
-                MyReportsResponse myReports = Model.RunMeister<MyReportsRequest, MyReportsResponse>(req, @"Meister.Reporting.MyReports", out MeisterException);
-                List<MyReport> enums = new List<MyReport>();
-                foreach (var rep in myReports.MyReports)
-                {
-                    var br = new MyReport();
-                    br.Report.Mode = rep.Report.Mode;
-                    br.Report.Name = rep.Report.Name;
-                    br.Report.Description = rep.Report.Description;
-                    enums.Add(br);
-                }
-                BindData<List<MyReport>>(GridView1, enums, SesMatches);
+                ReportFinderRequest req = new ReportFinderRequest();
+                req.Criteria= TextBox1.Text.ToUpper();
+                ReportFinderResponse response = Model.RunMeister<ReportFinderRequest, ReportFinderResponse>(req, @"Meister.Reporting.Report.Finder", out MeisterException);
+                BindData<List<Finder>>(GridView1, response.Finder, gridView1);
                 Grid1.Visible = true;
             }
         }
@@ -251,11 +242,12 @@ namespace MeisterReporting
                     row.BackColor = ColorTranslator.FromHtml("#A1DCF2");
                     row.ToolTip = "Program Selected";
                     UpdateProgress1.Visible = true;
-                    Session[ReportName] = GridView1.Rows[row.RowIndex].Cells[2].Text;
+                    Session[ReportName] = GridView1.Rows[row.RowIndex].Cells[1].Text;
                     SetMessage("Reading Report and Variants ....");
                     ReportParametersRequest req = new ReportParametersRequest();
-                    req.ReportName = GridView1.Rows[row.RowIndex].Cells[2].Text;
-                    ReportParametersResponse reportParameters = Model.RunMeister<ReportParametersRequest, ReportParametersResponse>(req, @"Meister.Reporting.Report.Variants", out MeisterException);
+                    req.ReportName = GridView1.Rows[row.RowIndex].Cells[1].Text;
+                    req.VariantName = "*";
+                    ReportParametersResponse reportParameters = Model.RunMeister<ReportParametersRequest, ReportParametersResponse>(req, @"Meister.Reporting.Report.Parameters", out MeisterException);
                     BuildParameterList(reportParameters, GridView2);
                     BuildVariants(reportParameters, GridView4);
                     Grid2.Visible = true;
@@ -311,33 +303,34 @@ namespace MeisterReporting
 
         protected void Button2_Click(object sender, EventArgs e)
         {
-            string rep = GridView1.Rows[GridView1.SelectedIndex].Cells[2].Text;
+            string rep = GridView1.Rows[GridView1.SelectedIndex].Cells[1].Text;
+            string repType = GridView1.Rows[GridView1.SelectedIndex].Cells[3].Text;
             if (DemoMode)
                 if (!AvailableReports.Contains(rep))
                     ShowAlert(DoMessage(rep, AvailableReports));
             AfterB2.Visible = true;
             SchedulerRequest req = new SchedulerRequest();
             req.Option = "N";
-            req.Schedule.Variant = Session[VarNameSaved].ToString();
+            req.Schedule.Variant = GridView4.Rows[GridView4.SelectedIndex].Cells[1].Text;
             if (RadioButtonList3.SelectedValue == "N")
                 req.Schedule.ColumnsNamed = true;
             else
                 req.Schedule.WithMetadata = true;
             foreach (GridViewRow g0 in GridView2.Rows)
-                if (IsItValid(g0.Cells[4].Text) || IsItValid(g0.Cells[5].Text))
+                if (IsItValid(g0.Cells[6].Text) || IsItValid(g0.Cells[7].Text))
                 {
                     MeisterReporting.Parameter ps = new MeisterReporting.Parameter();
                     ps.SelName = g0.Cells[1].Text;
                     ps.Sign = "I";
-                    ps.Kind = SAPKind(g0.Cells[2].Text);
-                    ps.Option = g0.Cells[4].Text;
-                    ps.Low = g0.Cells[5].Text;
-                    if (IsItValid(g0.Cells[5].Text))
+                    ps.Kind = SAPKind(g0.Cells[3].Text);
+                    ps.Option = g0.Cells[5].Text;
+                    ps.Low = g0.Cells[6].Text;
+                    if (IsItValid(g0.Cells[7].Text))
                     {
                         if (IsItValid(g0.Cells[6].Text))
                         {
                             if (GetOptions(true).Contains(ps.Option))
-                                ps.High = g0.Cells[6].Text;
+                                ps.High = g0.Cells[7].Text;
                             else
                             {
                                 ShowAlert(DoMessage(ps.Option, ValidOptionsH, true));
@@ -355,11 +348,28 @@ namespace MeisterReporting
                         req.Schedule.Parameters.Add(ps);
                     }
                 }
-            req.Schedule.ReportName = GridView1.Rows[GridView1.SelectedIndex].Cells[2].Text;
+            req.Schedule.ReportName = GridView1.Rows[GridView1.SelectedIndex].Cells[1].Text;
             req.UserName = GetUserName();
-            SchedulerResponse schedulerResponse = Model.RunMeister<SchedulerRequest, SchedulerResponse>(req, @"Meister.Reporting.Scheduler", out MeisterException);
-            TextBox2.Text = schedulerResponse.Guid;
-            TextBox3.Text = schedulerResponse.Messages.FirstOrDefault().MessageMessage;
+            if (RadioButtonList1.SelectedValue == "I")
+            {
+                ReportRunRequest request = new ReportRunRequest();
+                request.UserName = req.UserName;
+                request.Report.ColumnsNamed = req.Schedule.ColumnsNamed;
+                request.Report.Name = req.Schedule.ReportName;
+                request.Report.Parameters = req.Schedule.Parameters;
+                request.Report.WithMetadata = req.Schedule.WithMetadata;
+                request.Report.Variant = req.Schedule.Variant;
+                request.Report.ReportType = repType;
+                ReportRunResponse response = Model.RunMeister<ReportRunRequest, ReportRunResponse>(request, "Meister.Reporting.Run", out MeisterException);
+                TextBox2.Text = response.Guid;
+                TextBox3.Text = response.Messages.FirstOrDefault().Text;
+            }
+            else
+            {
+                SchedulerResponse schedulerResponse = Model.RunMeister<SchedulerRequest, SchedulerResponse>(req, @"Meister.Reporting.Scheduler", out MeisterException);
+                TextBox2.Text = schedulerResponse.Guid;
+                TextBox3.Text = schedulerResponse.Messages.FirstOrDefault().Text;
+            }
         }
 
         public static void ShowAlert(string message)
@@ -502,51 +512,32 @@ namespace MeisterReporting
                 Button7.Enabled = false;
                 MyReportsRequest req = new MyReportsRequest();
                 req.userName = GetUserName();
-                MyReportsResponse myReports = Model.RunMeister<MyReportsRequest, MyReportsResponse>(req, "", out MeisterException);
-                List<MyReport> reps  = new List<MyReport>();
-                if (myReports != null)
+                MyReportsResponse myReports = Model.RunMeister<MyReportsRequest, MyReportsResponse>(req,"Meister.Reporting.MyReports", out MeisterException);
+                List <MyReportUI> reps  = new List<MyReportUI>();
+                BindData<List<MyReportUI>>(GridView3, reps, gridView3);
+                if (myReports != null && myReports.MyReports != null)
                 {
                     foreach (var rd in myReports.MyReports)
                     {
-                        var rep = new MyReport();
-                        rep.Pky = rd.Pky;
+                        var rep = new MyReportUI();
+                        rep.Guid = rd.Guid;
                         DateTime dt = FromStringDT(rd.DateStamp, rd.TimeStamp);
                         rep.DateStamp = String.Format("{0:yyyy/MM/dd}", dt);
                         rep.TimeStamp = String.Format("{0:HH:mm tt}", dt);
-                        rep.Report.Name = rd.Report.Name;
-                        if (!string.IsNullOrEmpty(rd.Report.Description))
-                            rep.Report.Description = rd.Report.Description;
+                        rep.Name = rd.Report.Name;
+                        rep.UserName = rd.UserName;
+                        rep.ColumnsNamed = rd.Report.ColumnsNamed;
+                        rep.WithMetadata = rd.Report.WithMetadata;
+                        rep.ReportType = System.Enum.GetName(typeof(Report.ReportTypes), rd.Report.ReportType.ToArray()[0]);
+                        if (!string.IsNullOrEmpty((string)rd.Report.Description))
+                            rep.Description = rd.Report.Description;
                         else
-                            rep.Report.Description = "Generated Report";
-                        switch (rd.Report.Status)
-                        {
-                            case "S":
-                                {
-                                    rep.Report.Status = "Scheduled";
-                                    break;
-                                }
-                            case "R":
-                                {
-                                    rep.Report.Status = "Running";
-                                    break;
-                                }
-                            case "F":
-                                {
-                                    rep.Report.Status = "Finished";
-                                    break;
-                                }
-                            case "A":
-                                {
-                                    rep.Report.Status = "Aborted";
-                                    break;
-                                }
-                            default:
-                                break;
-                        }
+                            rep.Description = "Generated Report";
+                        rep.Status = System.Enum.GetName(typeof(Report.Statuses), rd.Report.Status.ToArray()[0]);
                         reps.Add(rep);
                     }
                     GridView3.Caption = "Reports found for user";
-                    BindData<List<MyReport>>(GridView3, reps, gridView3);
+                    BindData<List<MyReportUI>>(GridView3, reps, gridView3);
                 }
                 ReportsShown = true;
                 Session[SesShowRep] = true;
@@ -585,7 +576,7 @@ namespace MeisterReporting
             if (DoingSchedule())
                 NewPage<Schedule>(GridView3, e.NewPageIndex, SaveSchedule);
             else
-                NewPage<Report>(GridView3, e.NewPageIndex, gridView3);
+                NewPage<ThisReport>(GridView3, e.NewPageIndex, gridView3);
         }
 
         protected void GridView2_PageIndexChanging(object sender, GridViewPageEventArgs e)
@@ -595,7 +586,7 @@ namespace MeisterReporting
 
         protected void GridView1_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
-            NewPage<MyReport>(GridView1, e.NewPageIndex, SesMatches);
+            NewPage<MyReport>(GridView1, e.NewPageIndex, gridView1);
         }
 
 
@@ -629,17 +620,17 @@ namespace MeisterReporting
                             Button8.Enabled = true;
                             Session[SelectedSchedule] = uuid;
                             RadioButtonList2.Visible = false;
-                            TextBox7.Text = schedule.Slot;
+                            TextBox7.Text = schedule.TimeSlot;
                             txtNickName.Text = schedule.NickName;
                             lbDOW.Text = "Schedule Time Slot";
-                            if (schedule.Dow != string.Empty)
+                            if (schedule.DayOfWeek != string.Empty)
                             {
-                                RadioButtonList2.SelectedValue = schedule.Dow;
+                                RadioButtonList2.SelectedValue = schedule.DayOfWeek;
                                 RadioButtonList2.Visible = true;
                                 lbDOW.Text = "Schedule Day of the Week and Time Slot";
                             }
-                            if (schedule.AgendaType != string.Empty)
-                                RadioButtonList1.SelectedValue = schedule.AgendaType.Substring(0, 1);
+                            if (schedule.ScheduleType != string.Empty)
+                                RadioButtonList1.SelectedValue = schedule.ScheduleType.Substring(0, 1);
                             else
                                 RadioButtonList1.SelectedValue = "D";
                         }
@@ -659,14 +650,14 @@ namespace MeisterReporting
                 {
                     if (row.RowIndex == GridView3.SelectedIndex)
                     {
-                        string name = GridView3.Rows[row.RowIndex].Cells[4].Text;
+                        string name = GridView3.Rows[row.RowIndex].Cells[1].Text;
                         string zn = name + ".zip";
                         row.BackColor = ColorTranslator.FromHtml("#A1DCF2");
                         row.ToolTip = "Retrieving Report";
                         Thread.Sleep(100);
                         ReadReportRequest req = new ReadReportRequest();
-                        req.reportGuid = GridView3.Rows[row.RowIndex].Cells[3].Text;
-                        req.keepReport = true;
+                        req.Guid= GridView3.Rows[row.RowIndex].Cells[1].Text;
+                        req.KeepReport = true;
                         ReadReportResponse readReport = Model.RunMeister<ReadReportRequest, ReadReportResponse>(req, "Meister.Reporting.Retrieve", out MeisterException);
                         if (readReport != null)
                         {
@@ -737,11 +728,10 @@ namespace MeisterReporting
                     row.BackColor = ColorTranslator.FromHtml("#A1DCF2");
                     row.ToolTip = "Variant Selected";
                     ReportParametersRequest req = new ReportParametersRequest();
-                    req.ReportName = GridView1.Rows[GridView1.SelectedIndex].Cells[2].Text;
+                    req.ReportName = GridView1.Rows[GridView1.SelectedIndex].Cells[1].Text;
                     req.VariantName = GridView4.Rows[row.RowIndex].Cells[1].Text;
                     ReportParametersResponse reportParameters = Model.RunMeister<ReportParametersRequest, ReportParametersResponse>(req, @"Meister.Reporting.Report.Parameters", out MeisterException);
                     FilldParameterList(reportParameters, GridView2, GridView4.Rows[row.RowIndex].Cells[1].Text);
-                    Session[VarNameSaved] = GridView4.Rows[row.RowIndex].Cells[1].Text;
                     Session[VarParCnt] = reportParameters;
                     VariantSave.Visible = false;
                     BeforeB2.Visible = true;
@@ -756,14 +746,7 @@ namespace MeisterReporting
 
         private void FilldParameterList(ReportParametersResponse reportParameters, GridView grv, string varname)
         {
-            List<ParameterOut> binds = Session[OriginalParms] as List<ParameterOut>;
-            BindData(GridView2, binds, OriginalParms);
-            foreach (var item in binds)
-            {
-                item.Option = "EQ";
-                item.Low = string.Empty;
-                item.High = string.Empty;
-            }
+            List<ParameterOut> binds = reportParameters.ReportMetadata.ReportParameters;
             MeisterReporting.VariantOut vsel = (from x in reportParameters.ReportMetadata.Variants where (x.Name == varname) select x).FirstOrDefault();
             if (vsel.Parameters != null)
                 foreach (var v in vsel.Parameters)
@@ -776,6 +759,12 @@ namespace MeisterReporting
                                 v0.Option = v.Option;
                             v0.Low= CheckContent(v.Low);
                             v0.High = CheckContent(v.High);
+                        }
+                        else
+                        {
+                            v0.Option = "EQ";
+                            v0.Low = string.Empty;
+                            v0.High = string.Empty;
                         }
                     }
                 }
@@ -1027,24 +1016,26 @@ namespace MeisterReporting
                 Button3.Enabled = false;
                 Button4.Enabled = false;
                 Grid3.Visible = true;
-                GridView3.Caption = "Schedule for User";
+                GridView3.Caption = "Schedule for " + GetUserName();
                 SchedulerRequest req = new SchedulerRequest();
                 req.UserName = GetUserName();
+                req.Option = "R";
                 SchedulerResponse schedulerResponse = Model.RunMeister<SchedulerRequest, SchedulerResponse>(req, @"Meister.Reporting.Scheduler", out MeisterException);
                 List<Schedule> reps = new List<Schedule>();
-                if (schedulerResponse != null)
+                BindData<List<Schedule>>(GridView3, reps, SaveSchedule);
+                if (schedulerResponse != null && schedulerResponse.Schedules != null)
                 {
                     foreach (var l1 in schedulerResponse.Schedules)
                     {
                         var ab = new Schedule();
                         ab.NickName = l1.NickName;
-                        ab.AgendaType = GetScheduleType(l1.AgendaType);
-                        ab.Slot = l1.Slot;
-                        if (ab.Slot.Length == 1)
-                            ab.Slot = "0" + ab.Slot;
+                        ab.ScheduleType = GetScheduleType(l1.ScheduleType);
+                        ab.TimeSlot = l1.TimeSlot;
+                        if (ab.TimeSlot.Length == 1)
+                            ab.TimeSlot = "0" + ab.TimeSlot;
                         ab.Guid = l1.Guid;
-                        ab.Dow = GetDOW(l1.Dow);
-                        ab.ReportName = GetUserName();
+                        ab.DayOfWeek = GetDOW(l1.DayOfWeek);
+                        ab.ReportName = l1.ReportName;
                         reps.Add(ab);
                     }
                     GridView3.Caption = "Schedule found for user";
@@ -1148,11 +1139,12 @@ namespace MeisterReporting
             {
                 req.Option = "N";
             }
-            req.Schedule.AgendaType = RadioButtonList1.SelectedValue;
-            if (req.Schedule.AgendaType == "W")
-                req.Schedule.Dow = RadioButtonList2.SelectedValue;
+            req.Schedule.ScheduleType = RadioButtonList1.SelectedValue;
+            if (req.Schedule.ScheduleType == "W")
+                req.Schedule.DayOfWeek = RadioButtonList2.SelectedValue;
             req.Schedule.NickName = txtNickName.Text;
-            req.Schedule.Slot = TextBox7.Text;
+            req.Schedule.TimeSlot = TextBox7.Text;
+            req.Schedule.ReportName = GridView1.Rows[GridView1.SelectedIndex].Cells[1].Text;
             req.UserName = GetUserName();
             if (RadioButtonList3.SelectedValue == "N")
                 req.Schedule.WithMetadata = true;
@@ -1161,7 +1153,7 @@ namespace MeisterReporting
             if (IsItValid(TextBox4.Text))
                 req.Schedule.Variant = TextBox4.Text;
             else
-                req.Schedule.Variant = Session[VarNameSaved] as string;
+                req.Schedule.Variant = GridView4.Rows[GridView4.SelectedIndex].Cells[1].Text;
             if (!string.IsNullOrEmpty(req.Schedule.Variant))
             {
                 req.Schedule.Parameters = new List<MeisterReporting.Parameter>();

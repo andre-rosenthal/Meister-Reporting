@@ -13,7 +13,7 @@ namespace MeisterReporting
         public MeisterCore.MeisterException MeisterException { get; set; }
         public Model()
         {
-
+            Controller = new Controller();
         }
 
         public RES RunMeister<REQ,RES>(REQ req, string call, out MeisterException exception)

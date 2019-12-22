@@ -26,8 +26,8 @@ namespace MeisterReporting
 
     public partial class ThisReport
     {
-        [JsonProperty("reportGuid")]
-        public string ReportGuid { get; set; }
+        [JsonProperty("guid")]
+        public string Guid { get; set; }
 
         [JsonProperty("keepReport")]
         public bool KeepReport { get; set; }

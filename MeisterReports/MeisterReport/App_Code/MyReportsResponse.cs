@@ -23,8 +23,12 @@ namespace MeisterReporting
 
     public partial class MyReport
     {
-        [JsonProperty("pky")]
-        public string Pky { get; set; }
+        public MyReport()
+        {
+            Report = new Report();
+        }
+        [JsonProperty("guid")]
+        public string Guid { get; set; }
 
         [JsonProperty("userName")]
         public string UserName { get; set; }
@@ -39,32 +43,6 @@ namespace MeisterReporting
         public Report Report { get; set; }
     }
 
-    public partial class Report
-    {
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
-        [JsonProperty("description")]
-        public string Description { get; set; }
-
-        [JsonProperty("mode")]
-        public string Mode { get; set; }
-
-        [JsonProperty("parameters")]
-        public List<Parameter> Parameters { get; set; }
-
-        [JsonProperty("variant")]
-        public string Variant { get; set; }
-
-        [JsonProperty("withMetadata")]
-        public bool WithMetadata { get; set; }
-
-        [JsonProperty("columnsNamed")]
-        public bool ColumnsNamed { get; set; }
-
-        [JsonProperty("status")]
-        public string Status { get; set; }
-    }
 
     public partial class MyReportsResponse
     {

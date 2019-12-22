@@ -8,6 +8,10 @@ namespace MeisterReporting
 {
     public partial class UpsertVariantRequest
     {
+        public UpsertVariantRequest()
+        {
+            Parameters = new List<Parameter>();
+        }
         [JsonProperty("reportName")]
         public string ReportName { get; set; }
 

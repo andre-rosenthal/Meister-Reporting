@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -10,7 +11,9 @@ namespace MeisterReporting
     /// </summary>
     public class ReadReportRequest
     {
-        public string reportGuid { get; set; }
-        public bool keepReport { get; set; }
+        [JsonProperty("guid")]
+        public string Guid { get; set; }
+        [JsonProperty("keepReport")]
+        public bool KeepReport { get; set; }
     }
 }

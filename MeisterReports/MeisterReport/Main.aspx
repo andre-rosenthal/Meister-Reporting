@@ -28,7 +28,7 @@
         <h1>Meister Reporter </h1>
         <h2>Select an options:</h2><br />
         <br />
-        <asp:Button ID="Button7" runat="server" OnClick="Button7_Click" Text="Show Agenda" CssClass="auto-style1" />
+        <asp:Button ID="Button7" runat="server" OnClick="Button7_Click" Text="Show Schedule" CssClass="auto-style1" />
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <asp:Button ID="Button3" runat="server" Text="Show my Reports" OnClick="Button3_Click" CssClass="auto-style1" />
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

@@ -8,6 +8,10 @@ namespace MeisterReporting
 {
     public partial class SchedulerRequest
     {
+        public SchedulerRequest()
+        {
+            Schedule = new Schedule();
+        }
         [JsonProperty("option")]
         public string Option { get; set; }
 
@@ -20,17 +24,21 @@ namespace MeisterReporting
 
     public partial class Schedule
     {
+        public Schedule()
+        {
+            Parameters = new List<Parameter>();
+        }
         [JsonProperty("guid")]
         public string Guid { get; set; }
 
-        [JsonProperty("agendaType")]
-        public string AgendaType { get; set; }
+        [JsonProperty("scheduleType")]
+        public string ScheduleType { get; set; }
 
-        [JsonProperty("dow")]
-        public string Dow { get; set; }
+        [JsonProperty("dayOfWeek")]
+        public string DayOfWeek { get; set; }
 
-        [JsonProperty("slot")]
-        public string Slot { get; set; }
+        [JsonProperty("timeSlot")]
+        public string TimeSlot { get; set; }
 
         [JsonProperty("nickName")]
         public string NickName { get; set; }

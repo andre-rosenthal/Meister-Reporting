@@ -35,6 +35,46 @@ namespace MeisterReporting
             return JsonConvert.DeserializeObject<T>(d, Converter.Settings);
         }
     }
+    public partial class Report
+    {
+        public enum ReportTypes
+        {
+            Program = 'P',
+            TCode = 'T',
+            Report = 'R',
+            Financial = 'F'
+        }
+        public enum Statuses
+        {
+            Scheduled = 'S',
+            Finished = 'F',
+            Running = 'R',
+            Aborted = 'A'
+        }
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
+        [JsonProperty("reportType")]
+        public string ReportType { get; set; }
+
+        [JsonProperty("variant")]
+        public string Variant { get; set; }
+
+        [JsonProperty("withMetadata")]
+        public bool WithMetadata { get; set; }
+
+        [JsonProperty("columnsNamed")]
+        public bool ColumnsNamed { get; set; }
+
+        [JsonProperty("status")]
+        public string Status { get; set; }
+
+        [JsonProperty("parameters")]
+        public List<Parameter> Parameters { get; set; }
+    }
     public partial class Variant
     {
         [JsonProperty("name")]
@@ -87,7 +127,7 @@ namespace MeisterReporting
         public long Number { get; set; }
 
         [JsonProperty("message")]
-        public string MessageMessage { get; set; }
+        public string Text { get; set; }
 
         [JsonProperty("logNo")]
         public string LogNo { get; set; }
