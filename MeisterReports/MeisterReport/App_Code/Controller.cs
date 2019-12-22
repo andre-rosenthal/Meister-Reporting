@@ -39,12 +39,12 @@ namespace MeisterReporting
             Gateway = gatewayUri;
             GatewayClient = sapclient;
             MeisterCore.Support.MeisterSupport.AuthenticationModes am = MeisterCore.Support.MeisterSupport.AuthenticationModes.Basic;
-            resource = new Resource<dynamic, dynamic>(gatewayUri, headerValue, sapclient, me, mo, am, ro,MeisterCore.Support.MeisterSupport.Languages.DE);
+            resource = new Resource<dynamic, dynamic>(gatewayUri, headerValue, sapclient, me, mo, am, ro,MeisterCore.Support.MeisterSupport.Languages.CultureBased);
             return resource.Authenticate();
         }
         public T ExecuteRequest<R, T>(string ep, R req)
         {
-            Resource<R, T> resource = new Resource<R, T>(Gateway, headerValue, GatewayClient, me, mo, am, ro,MeisterCore.Support.MeisterSupport.Languages.DE);
+            Resource<R, T> resource = new Resource<R, T>(Gateway, headerValue, GatewayClient, me, mo, am, ro,MeisterCore.Support.MeisterSupport.Languages.CultureBased);
             return resource.Execute(ep, req);
         }
         public void CleanUp()
