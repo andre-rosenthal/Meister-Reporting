@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using MeisterCore;
+using MeisterCore.Support;
 
 namespace MeisterReporting
 {
@@ -40,7 +41,8 @@ namespace MeisterReporting
             GatewayClient = sapclient;
             MeisterCore.Support.MeisterSupport.AuthenticationModes am = MeisterCore.Support.MeisterSupport.AuthenticationModes.Basic;
             resource = new Resource<dynamic, dynamic>(gatewayUri, headerValue, sapclient, me, mo, am, ro,MeisterCore.Support.MeisterSupport.Languages.CultureBased);
-            return resource.Authenticate();
+            MeisterStatus ms = resource.Authenticate();
+            return ms.StatusCode == System.Net.HttpStatusCode.OK ? true : false;
         }
         public T ExecuteRequest<R, T>(string ep, R req)
         {
