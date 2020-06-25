@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Web;
@@ -696,14 +697,11 @@ namespace MeisterReporting
         public void DownloadZipFiles(string fileName, Dictionary<string, string> files)
         {
             string zipname = Path.Combine(Path.GetTempPath(), fileName);
-            using (Ionic.Zip.ZipFile zipFile = new Ionic.Zip.ZipFile())
-            {
+            using (ZipArchive archive = ZipFile.Open(zipname, ZipArchiveMode.Update))
                 foreach (var file in files)
                 {
-                    zipFile.AddFile(file.Value, "");
+                    archive.CreateEntryFromFile(file.Value,file.Key );
                 }
-                zipFile.Save(zipname);
-            }
             Response.Clear();
             Response.ContentType = "application/zip";
             Response.AddHeader("content-disposition", "attachment; filename=" + fileName);

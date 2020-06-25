@@ -18,7 +18,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.30319</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{01c3fe45-6884-436e-9d18-817c60cb6815}</ProjectGuid>
+    <ProjectGuid>{747c6975-b36e-4203-95f2-4f98bf189171}</ProjectGuid>
     <SourceWebPhysicalPath>$(MSBuildThisFileDirectory)</SourceWebPhysicalPath>
     <SourceWebVirtualPath>/MeisterReport</SourceWebVirtualPath>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
