@@ -281,7 +281,7 @@ namespace MeisterReporting
         private void BuildVariants(ReportParametersResponse variantInfo, GridView grv)
         {
             List<Variant> variants = new List<Variant>();
-            if (variantInfo != null)
+            if (variantInfo != null && variantInfo.ReportMetadata.Variants != null)
                 foreach (var v in variantInfo.ReportMetadata.Variants)
                 {
                     Variant variant = new Variant();
@@ -426,11 +426,11 @@ namespace MeisterReporting
         protected void GridView2_RowEditing(object sender, GridViewEditEventArgs e)
         {
             GridView2.EditIndex = e.NewEditIndex;
-            List<Parameter> parameters = Session[gridView2] as List<Parameter>;
+            List<ParameterOut> parameters = Session[gridView2] as List<ParameterOut>;
             var v = parameters.ElementAt(GridView2.EditIndex);
             if (v != null)
             {
-                BindData<List<Parameter>>(GridView2, parameters, gridView2);
+                BindData<List<ParameterOut>>(GridView2, parameters, gridView2);
                 Freshup(GridView4);
             }
             VariantSave.Visible = true;
@@ -454,7 +454,7 @@ namespace MeisterReporting
         protected void GridView2_RowUpdating(object sender, GridViewUpdateEventArgs e)
         {
             GridViewRow gvr = GridView2.Rows[e.RowIndex];
-            List<Parameter> parameters = Session[gridView2] as List<Parameter>;
+            List<ParameterOut> parameters = Session[gridView2] as List<ParameterOut>;
             var v = parameters.ElementAt(GridView2.EditIndex);
             if (v != null)
             {
@@ -481,7 +481,7 @@ namespace MeisterReporting
                     v.Low= GrabGridUpdate(gvr, 5);
                     v.High = GrabGridUpdate(gvr, 6);
                     GridView2.EditIndex = -1;
-                    BindData<List<Parameter>>(GridView2,parameters, gridView2);
+                    BindData<List<ParameterOut>>(GridView2,parameters, gridView2);
                     Session[SesHasParm] = true;
                     BeforeB2.Visible = true;
                     Session[ParmsAltered] = ParmChanges;
