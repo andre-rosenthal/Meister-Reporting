@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
@@ -249,16 +250,21 @@ namespace MeisterReporting
                     req.ReportName = GridView1.Rows[row.RowIndex].Cells[1].Text;
                     req.VariantName = "*";
                     ReportParametersResponse reportParameters = Model.RunMeister<ReportParametersRequest, ReportParametersResponse>(req, @"Meister.Reporting.Report.Parameters", out MeisterException);
-                    BuildParameterList(reportParameters, GridView2);
-                    BuildVariants(reportParameters, GridView4);
-                    Grid2.Visible = true;
-                    BeforeB2.Visible = false;
-                    SearchSAP.Visible = true;
-                    UpdateProgress1.Visible = false;
-                    SetMessage("Done reading Report and Variants ....");
-                    if (IsDemoMode())
+                    if (reportParameters.ReportMetadata == null)
+                        SetMessage("Report has no parameters ....");
+                    else
                     {
-                        Label10.Visible = true;
+                        BuildParameterList(reportParameters, GridView2);
+                        BuildVariants(reportParameters, GridView4);
+                        Grid2.Visible = true;
+                        BeforeB2.Visible = false;
+                        SearchSAP.Visible = true;
+                        UpdateProgress1.Visible = false;
+                        SetMessage("Done reading Report and Variants ....");
+                        if (IsDemoMode())
+                        {
+                            Label10.Visible = true;
+                        }
                     }
                 }
                 else
@@ -582,7 +588,7 @@ namespace MeisterReporting
 
         protected void GridView2_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
-            NewPage<Parameter>(GridView2, e.NewPageIndex, gridView2);
+            NewPage<ParameterOut>(GridView2, e.NewPageIndex, gridView2);
         }
 
         protected void GridView1_PageIndexChanging(object sender, GridViewPageEventArgs e)
@@ -745,29 +751,40 @@ namespace MeisterReporting
         private void FilldParameterList(ReportParametersResponse reportParameters, GridView grv, string varname)
         {
             List<ParameterOut> binds = reportParameters.ReportMetadata.ReportParameters;
+            List<ParameterOut> parameters = new List<ParameterOut>();
             MeisterReporting.VariantOut vsel = (from x in reportParameters.ReportMetadata.Variants where (x.Name == varname) select x).FirstOrDefault();
-            if (vsel.Parameters != null)
-                foreach (var v in vsel.Parameters)
+            if (vsel.Parameters != null && binds != null)
+                foreach (var v0 in binds)
                 {
-                    foreach (var v0 in binds)
+                    ParameterOut pout = new ParameterOut();
+                    var v9 = (from x1 in vsel.Parameters where (x1.SelName == v0.SelName) select x1).FirstOrDefault();
+                    if (v9 != null)
                     {
-                        if (v0.SelName == v.SelName)
+                        pout = v0;
+                        pout.SelName = v9.SelName;
+                        pout.Option = v9.Option;
+                        pout.Low = CheckContent(v9.Low);
+                        pout.High = CheckContent(v9.High);
+                        pout.Sign = v9.Sign;
+                        if (v9.Low == "X" && string.IsNullOrEmpty(pout.Option))
                         {
-                            if (IsKosher(v.Option))
-                                v0.Option = v.Option;
-                            v0.Low= CheckContent(v.Low);
-                            v0.High = CheckContent(v.High);
+                            pout.Option = "EQ";
+                            pout.Sign = "I";
                         }
-                        else
+                     }
+                    else
+                    {
+                        pout = v0;
+                        if (v0.Low == "X" && string.IsNullOrEmpty(pout.Option))
                         {
-                            v0.Option = "EQ";
-                            v0.Low = string.Empty;
-                            v0.High = string.Empty;
+                            pout.Option = "EQ";
+                            pout.Sign = "I";
                         }
                     }
+                    parameters.Add(pout);
                 }
             Session[ReportParameterResponse] = reportParameters;
-            BindData<List<ParameterOut>>(grv, binds, gridView2);
+            BindData<List<ParameterOut>>(grv, parameters, gridView2);
         }
 
         private string CheckContent(string s)
