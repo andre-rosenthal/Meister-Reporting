@@ -52,6 +52,7 @@ namespace MeisterReporting
         private const string ReportName = "ReportName";
         private const string ShowSchedule = "ShowSchedule";
         private const string SaveSchedule = "SaveSchedule";
+        private const string gtw_url = "gateway_url";
         private const string SelectedSchedule = "SelectedSchedule";
         private const string SavedNick = "SavedNick";
         private const string VarNameSaved = "VarNameSaved";
@@ -84,6 +85,7 @@ namespace MeisterReporting
             ValidOptionsH = AddOptions(true);
             Session[ValidH] = ValidOptionsH;
             Session[ValidNH] = ValidOptionsNH;
+            this.UrlConn.Text = Session[gtw_url].ToString();
             if (!this.IsPostBack)
             {
                 SetMode("*");
@@ -135,7 +137,7 @@ namespace MeisterReporting
                 int i = AvailableReports.IndexOf(ddpDemo.SelectedValue);
                 if (i >= 0)
                 {
-                    TextBox8.Text = AvailableReportsDescr[i];
+                   TextBox8.Text = AvailableReportsDescr[i];
                 }
             }
             else
@@ -210,10 +212,11 @@ namespace MeisterReporting
             if (TextBox1.Text != string.Empty)
             {
                 ReportFinderRequest req = new ReportFinderRequest();
-                req.Criteria= TextBox1.Text.ToUpper();
+                req.Criteria = TextBox1.Text.ToUpper();
                 ReportFinderResponse response = Model.RunMeister<ReportFinderRequest, ReportFinderResponse>(req, @"Meister.Reporting.Report.Finder", out MeisterException);
                 BindData<List<Finder>>(GridView1, response.Finder, gridView1);
                 Grid1.Visible = true;
+                SetMouse();
             }
         }
 
@@ -377,6 +380,7 @@ namespace MeisterReporting
                 TextBox2.Text = schedulerResponse.Guid;
                 TextBox3.Text = schedulerResponse.Messages.FirstOrDefault().Text;
             }
+            SetMouse();
         }
 
         public static void ShowAlert(string message)
@@ -521,7 +525,6 @@ namespace MeisterReporting
                 req.userName = GetUserName();
                 MyReportsResponse myReports = Model.RunMeister<MyReportsRequest, MyReportsResponse>(req,"Meister.Reporting.MyReports", out MeisterException);
                 List <MyReportUI> reps  = new List<MyReportUI>();
-                BindData<List<MyReportUI>>(GridView3, reps, gridView3);
                 if (myReports != null && myReports.MyReports != null)
                 {
                     foreach (var rd in myReports.MyReports)
@@ -583,7 +586,8 @@ namespace MeisterReporting
             if (DoingSchedule())
                 NewPage<Schedule>(GridView3, e.NewPageIndex, SaveSchedule);
             else
-                NewPage<ThisReport>(GridView3, e.NewPageIndex, gridView3);
+                NewPage<MyReportUI>(GridView3, e.NewPageIndex, gridView3);
+
         }
 
         protected void GridView2_PageIndexChanging(object sender, GridViewPageEventArgs e)
@@ -1307,7 +1311,13 @@ namespace MeisterReporting
                 txtNickName.Text = txtNickName.Text + " at " + TextBox7.Text + " Hours";
         }
 
-
+        protected  void SetMouse(bool hour = false)
+        {
+            if (hour)
+                ScriptManager.RegisterStartupScript(this.Page, Page.GetType(), "Meister", "javascript:Hourglass()", true);
+            else
+                ScriptManager.RegisterStartupScript(this.Page, Page.GetType(), "Meister", "javascript:Default()", true);
+        }
 
         protected void txtNickName_TextChanged(object sender, EventArgs e)
         {
@@ -1318,6 +1328,14 @@ namespace MeisterReporting
         {
             if (e.Day.Date.CompareTo(DateTime.Today) <= 0)
                 e.Day.IsSelectable = false;
+        }
+
+        protected void GridView1_PreRender(object sender, EventArgs e)
+        {
+        }
+
+        protected void GridView1_Unload(object sender, EventArgs e)
+        {
         }
     }
 }

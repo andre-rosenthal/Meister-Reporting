@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Login.aspx.cs" Inherits="Login" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Login.aspx.cs" Inherits="MeisterReporting.Login" %>
 
 <!DOCTYPE html>
 
@@ -10,7 +10,7 @@
             height: 25px;
         }
         .auto-style2 {
-            width: 606px;
+            width: 633px;
         }
         .auto-style3 {
             text-align: left;
@@ -92,6 +92,8 @@
                             </td>
                         </tr>
                     </table>
+                    <p>
+                        &nbsp;</p>
     </form>
 </body>
 </html>
