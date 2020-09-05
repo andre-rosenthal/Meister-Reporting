@@ -4,6 +4,7 @@ namespace MeisterReporting
     public class MyReportUI
     {
         public string Guid { get; set; }
+        public string Status { get; set; }
         public string UserName { get; set; }
 
         public string DateStamp { get; set; }
@@ -20,8 +21,6 @@ namespace MeisterReporting
         public bool WithMetadata { get; set; }
 
         public bool ColumnsNamed { get; set; }
-
-        public string Status { get; set; }
     }
     /// <summary>
     /// Summary description for UI Support

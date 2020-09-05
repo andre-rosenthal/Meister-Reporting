@@ -321,7 +321,8 @@ namespace MeisterReporting
             AfterB2.Visible = true;
             SchedulerRequest req = new SchedulerRequest();
             req.Option = "N";
-            req.Schedule.Variant = GridView4.Rows[GridView4.SelectedIndex].Cells[1].Text;
+            if (GridView4.SelectedIndex != -1 && GridView4.Rows[GridView4.SelectedIndex] != null)
+                req.Schedule.Variant = GridView4.Rows[GridView4.SelectedIndex].Cells[1].Text;
             if (RadioButtonList3.SelectedValue == "N")
                 req.Schedule.ColumnsNamed = true;
             else
@@ -458,17 +459,17 @@ namespace MeisterReporting
             var v = parameters.ElementAt(GridView2.EditIndex);
             if (v != null)
             {
-                if (IsItValid(GrabGridUpdate(gvr, 6)))
+                if (IsItValid(GrabGridUpdate(gvr, 7)))
                 {
-                    if (!GetOptions(true).Contains(GrabGridUpdate(gvr, 4)))
+                    if (!GetOptions(true).Contains(GrabGridUpdate(gvr, 5)))
                     {
-                        ShowAlert(DoMessage(GrabGridUpdate(gvr, 4), ValidOptionsH, true));
+                        ShowAlert(DoMessage(GrabGridUpdate(gvr, 5), ValidOptionsH, true));
                         e.Cancel = true;
                     }
                 }
-                else if (!GetOptions(false).Contains(GrabGridUpdate(gvr, 4)))
+                else if (!GetOptions(false).Contains(GrabGridUpdate(gvr, 5)))
                 {
-                    ShowAlert(DoMessage(GrabGridUpdate(gvr, 4), ValidOptionsNH, true));
+                    ShowAlert(DoMessage(GrabGridUpdate(gvr, 5), ValidOptionsNH, true));
                     e.Cancel = true;
                 }
                 if (e.Cancel == false)
@@ -477,9 +478,9 @@ namespace MeisterReporting
                     if (ParmChanges == null)
                         ParmChanges = new List<string>();
                     ParmChanges.Add(v.SelName);
-                    v.Option = GrabGridUpdate(gvr, 4);
-                    v.Low= GrabGridUpdate(gvr, 5);
-                    v.High = GrabGridUpdate(gvr, 6);
+                    v.Option = GrabGridUpdate(gvr, 5);
+                    v.Low= GrabGridUpdate(gvr, 6);
+                    v.High = GrabGridUpdate(gvr, 7);
                     GridView2.EditIndex = -1;
                     BindData<List<ParameterOut>>(GridView2,parameters, gridView2);
                     Session[SesHasParm] = true;
@@ -538,6 +539,7 @@ namespace MeisterReporting
                         rep.UserName = rd.UserName;
                         rep.ColumnsNamed = rd.Report.ColumnsNamed;
                         rep.WithMetadata = rd.Report.WithMetadata;
+                        rep.Variant = rd.Report.Variant;
                         rep.ReportType = System.Enum.GetName(typeof(Report.ReportTypes), rd.Report.ReportType.ToArray()[0]);
                         if (!string.IsNullOrEmpty((string)rd.Report.Description))
                             rep.Description = rd.Report.Description;
