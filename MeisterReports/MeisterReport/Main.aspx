@@ -29,7 +29,7 @@
         <h2>
             <asp:Label ID="UrlConn" runat="server" Font-Bold="True" Font-Italic="True" Text="&gt;&gt;&gt; url &lt;&lt;&lt;&lt;&lt;"></asp:Label>
         </h2>
-        <h2>Select an options:</h2>
+        <h2>Select an option:</h2>
         <asp:Label ID="DefaultLbl" runat="server" Visible="False"></asp:Label>
         <br />
         <br />
@@ -45,7 +45,7 @@
             <asp:GridView ID="GridView3" runat="server" AutoGenerateSelectButton="True" Caption="Reports found for user"
                 AllowPaging="True" CellPadding="4" ForeColor="#333333" GridLines="None" OnPageIndexChanged="GridView3_PageIndexChanged"
                 OnPageIndexChanging="GridView3_PageIndexChanging" OnSelectedIndexChanged="GridView3_SelectedIndexChanged"
-                OnRowDeleting="GridView3_RowDeleting" OnRowDataBound="GridView3_RowDataBound" Style="font-size: large">
+                OnRowDeleting="GridView3_RowDeleting" OnRowDataBound="GridView3_RowDataBound" Style="font-size: large" CaptionAlign="Left">
                 <AlternatingRowStyle BackColor="White" />
                 <EditRowStyle BackColor="#2461BF" />
                 <FooterStyle BackColor="#507CD1" Font-Bold="True" ForeColor="White" />
@@ -86,7 +86,7 @@
                     <asp:GridView ID="GridView1" runat="server" AllowPaging="True" AllowSorting="True"
                         AutoGenerateSelectButton="True" CellPadding="4" OnSelectedIndexChanged="GridView1_SelectedIndexChanged"
                         ShowFooter="True" ShowHeaderWhenEmpty="True" Width="677px" Caption="Reports found at SAP matching the Hint passed "
-                        OnPageIndexChanging="GridView1_PageIndexChanging" ForeColor="#333333" GridLines="None" Style="font-size: medium" OnPreRender="GridView1_PreRender" OnUnload="GridView1_Unload">
+                        OnPageIndexChanging="GridView1_PageIndexChanging" ForeColor="#333333" GridLines="None" Style="font-size: medium" OnPreRender="GridView1_PreRender" OnUnload="GridView1_Unload" CaptionAlign="Left">
                         
                         <AlternatingRowStyle BackColor="White" />
                         <EditRowStyle BackColor="#2461BF" />
@@ -106,7 +106,7 @@
                     <asp:Label ID="Label10" runat="server" Text="Select Variant DEMO ..." Style="font-size: medium"></asp:Label>
                     <p></p>
                     <asp:GridView ID="GridView4" runat="server" AutoGenerateSelectButton="True" Caption="Variants found for chosen report"
-                        CellPadding="4" ForeColor="#333333" GridLines="None"  OnSelectedIndexChanged="GridView4_SelectedIndexChanged" Style="font-size: medium">
+                        CellPadding="4" ForeColor="#333333" GridLines="None"  OnSelectedIndexChanged="GridView4_SelectedIndexChanged" Style="font-size: medium" CaptionAlign="Left">
                         <AlternatingRowStyle BackColor="White" />
                         <EditRowStyle BackColor="#2461BF" />
                         <FooterStyle BackColor="#507CD1" Font-Bold="True" ForeColor="White" />
@@ -129,7 +129,7 @@
                         Width="830px" AutoGenerateEditButton="True" OnRowCancelingEdit="GridView2_RowCancelingEdit"
                         OnRowEditing="GridView2_RowEditing" OnRowUpdating="GridView2_RowUpdating" Caption="Parameters Found for report"
                         ForeColor="#333333" GridLines="None" OnPageIndexChanging="GridView2_PageIndexChanging"
-                        OnRowDataBound="GridView2_RowDataBound" OnRowUpdated="GridView2_RowUpdated" Style="font-size: medium">
+                        OnRowDataBound="GridView2_RowDataBound" OnRowUpdated="GridView2_RowUpdated" Style="font-size: medium" CaptionAlign="Left">
                         <AlternatingRowStyle BackColor="White" />
                         <EditRowStyle BackColor="#2461BF" />
                         <FooterStyle BackColor="#507CD1" ForeColor="White" Font-Bold="True" />

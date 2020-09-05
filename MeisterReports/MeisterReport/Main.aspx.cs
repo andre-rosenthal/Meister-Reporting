@@ -253,7 +253,11 @@ namespace MeisterReporting
                     req.ReportName = GridView1.Rows[row.RowIndex].Cells[1].Text;
                     req.VariantName = "*";
                     ReportParametersResponse reportParameters = Model.RunMeister<ReportParametersRequest, ReportParametersResponse>(req, @"Meister.Reporting.Report.Parameters", out MeisterException);
-                    if (reportParameters.ReportMetadata == null)
+                    if (reportParameters == null)
+                        SetMessage("Errors at SAP were triggered - please check for corrections at SAP");
+                    else if (reportParameters.ReportMetadata == null)
+                        SetMessage("Report is inconsistent - please check for corrections at SAP");
+                    else if (reportParameters.ReportMetadata.ReportParameters == null)
                         SetMessage("Report has no parameters ....");
                     else
                     {
