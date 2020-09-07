@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics.Eventing.Reader;
+using SdkModel = MeisterSDKReporting.MeisterModel;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
@@ -17,6 +17,7 @@ namespace MeisterReporting
 {
     public partial class Main : System.Web.UI.Page
     {
+        private SDK sdk = null;
         public MeisterException MeisterException = null;
         public List<string> AvailableReports { get; set; }
 
@@ -26,8 +27,6 @@ namespace MeisterReporting
         public List<string> ValidOptionsH { get; set; }
         public List<string> ParmChanges { get; set; }
         private bool DemoMode = false;
-        public Model Model { get; set; }
-        public UISupport MyVisibilities { get; set; }
         public bool ReportsShown { get; set; }
         public bool showSchedule { get; set; }
         public bool LookupShown { get; set; }
@@ -43,6 +42,7 @@ namespace MeisterReporting
         private const string gridView1 = "Matches";
         private const string gridView3 = "Reports";
         private const string ListOfVariants = "Variants";
+        private const string the_sdk = "SDK";
         private const string ValidH = "ValidH";
         private const string ValidNH = "ValidNH";
         private const string ParmSet = "ParmSet";
@@ -61,20 +61,18 @@ namespace MeisterReporting
         private const string ShowA = "Show Scheduler";
         private const string HideA = "Hide Scheduler";
         private const string userName = "UserName";
-        private const string theModel = "Model";
         private const string thisdate = "thisdate";
         private const string ReportParameterResponse = "ReportParametersResponse";
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            Model = Session[theModel] as Model;
-            if (Model == null)
+            sdk = Session[the_sdk] as SDK;
+            if (sdk == null)
                 this.Response.Redirect("~/login.aspx");
             object value = Session["od4"];
             bool bod4 = false;
             if (value != null)
                 bod4 = (bool)value;
-            Model.Controller.IsOD4 = bod4;
             ThisDate = DateTime.Today;
             SetMessage(String.Empty);
             AvailableReports = new List<string>();
@@ -93,8 +91,6 @@ namespace MeisterReporting
                 Calendar1.SelectedDate = Calendar1.TodaysDate;
                 SetDemo();
                 Session[ParmsAltered] = new List<string>();
-                MyVisibilities = new UISupport();
-                MyVisibilities.SetOperations(UISupport.Operations.gurnist);
             }
             else
             {
@@ -211,10 +207,10 @@ namespace MeisterReporting
             Label10.Visible = false;
             if (TextBox1.Text != string.Empty)
             {
-                ReportFinderRequest req = new ReportFinderRequest();
+                SdkModel.ReportFinderRequest req = new SdkModel.ReportFinderRequest();
                 req.Criteria = TextBox1.Text.ToUpper();
-                ReportFinderResponse response = Model.RunMeister<ReportFinderRequest, ReportFinderResponse>(req, @"Meister.Reporting.Report.Finder", out MeisterException);
-                BindData<List<Finder>>(GridView1, response.Finder, gridView1);
+                var res = sdk.reportSdk.FindReport(req);
+                BindData<List<SdkModel.Finder>>(GridView1, res.Finder, gridView1);
                 Grid1.Visible = true;
                 SetMouse();
             }
@@ -249,10 +245,10 @@ namespace MeisterReporting
                     UpdateProgress1.Visible = true;
                     Session[ReportName] = GridView1.Rows[row.RowIndex].Cells[1].Text;
                     SetMessage("Reading Report and Variants ....");
-                    ReportParametersRequest req = new ReportParametersRequest();
+                    SdkModel.ReportParametersRequest req = new SdkModel.ReportParametersRequest();
                     req.ReportName = GridView1.Rows[row.RowIndex].Cells[1].Text;
                     req.VariantName = "*";
-                    ReportParametersResponse reportParameters = Model.RunMeister<ReportParametersRequest, ReportParametersResponse>(req, @"Meister.Reporting.Report.Parameters", out MeisterException);
+                    var reportParameters = sdk.reportSdk.ReportParameters(req);
                     if (reportParameters == null)
                         SetMessage("Errors at SAP were triggered - please check for corrections at SAP");
                     else if (reportParameters.ReportMetadata == null)
@@ -282,7 +278,7 @@ namespace MeisterReporting
             }
         }
 
-        private void BuildVariants(ReportParametersResponse variantInfo, GridView grv)
+        private void BuildVariants(SdkModel.ReportParametersResponse variantInfo, GridView grv)
         {
             List<Variant> variants = new List<Variant>();
             if (variantInfo != null && variantInfo.ReportMetadata.Variants != null)
@@ -297,12 +293,12 @@ namespace MeisterReporting
             Grid4.Visible = true;
         }
 
-        private void BuildParameterList(ReportParametersResponse reportParms, GridView gridView)
+        private void BuildParameterList(SdkModel.ReportParametersResponse reportParms, GridView gridView)
         {
-            List<ParameterOut> parameters = new List<ParameterOut>();
+            List<SdkModel.ParameterOut> parameters = new List<SdkModel.ParameterOut>();
             foreach (var item in reportParms.ReportMetadata.ReportParameters)
             {
-                var parameter = new ParameterOut();
+                var parameter = new SdkModel.ParameterOut();
                 parameter.Kind = DisplayKind(item.Kind);
                 parameter.SelName = item.SelName;
                 parameter.Description = item.Description;
@@ -312,7 +308,7 @@ namespace MeisterReporting
                 parameters.Add(parameter);
             }
             Session[OriginalParms] = parameters;
-            BindData<List<ParameterOut>>(gridView, parameters, gridView2);
+            BindData<List<SdkModel.ParameterOut>>(gridView, parameters, gridView2);
         }
 
         protected void Button2_Click(object sender, EventArgs e)
@@ -323,7 +319,7 @@ namespace MeisterReporting
                 if (!AvailableReports.Contains(rep))
                     ShowAlert(DoMessage(rep, AvailableReports));
             AfterB2.Visible = true;
-            SchedulerRequest req = new SchedulerRequest();
+            SdkModel.SchedulerRequest req = new SdkModel.SchedulerRequest();
             req.Option = "N";
             if (GridView4.SelectedIndex != -1 && GridView4.Rows[GridView4.SelectedIndex] != null)
                 req.Schedule.Variant = GridView4.Rows[GridView4.SelectedIndex].Cells[1].Text;
@@ -334,7 +330,7 @@ namespace MeisterReporting
             foreach (GridViewRow g0 in GridView2.Rows)
                 if (IsItValid(g0.Cells[6].Text) || IsItValid(g0.Cells[7].Text))
                 {
-                    MeisterReporting.Parameter ps = new MeisterReporting.Parameter();
+                    SdkModel.Parameter ps = new SdkModel.Parameter();
                     ps.SelName = g0.Cells[1].Text;
                     ps.Sign = "I";
                     ps.Kind = SAPKind(g0.Cells[3].Text);
@@ -367,7 +363,7 @@ namespace MeisterReporting
             req.UserName = GetUserName();
             if (RadioButtonList1.SelectedValue == "I")
             {
-                ReportRunRequest request = new ReportRunRequest();
+                SdkModel.ReportRunRequest request = new SdkModel.ReportRunRequest();
                 request.UserName = req.UserName;
                 request.Report.ColumnsNamed = req.Schedule.ColumnsNamed;
                 request.Report.Name = req.Schedule.ReportName;
@@ -375,13 +371,13 @@ namespace MeisterReporting
                 request.Report.WithMetadata = req.Schedule.WithMetadata;
                 request.Report.Variant = req.Schedule.Variant;
                 request.Report.ReportType = repType;
-                ReportRunResponse response = Model.RunMeister<ReportRunRequest, ReportRunResponse>(request, "Meister.Reporting.Run", out MeisterException);
+                var response = sdk.reportSdk.RunReport(request);
                 TextBox2.Text = response.Guid;
                 TextBox3.Text = response.Messages.FirstOrDefault().Text;
             }
             else
             {
-                SchedulerResponse schedulerResponse = Model.RunMeister<SchedulerRequest, SchedulerResponse>(req, @"Meister.Reporting.Scheduler", out MeisterException);
+                var schedulerResponse = sdk.reportSdk.RunScheduler(req);
                 TextBox2.Text = schedulerResponse.Guid;
                 TextBox3.Text = schedulerResponse.Messages.FirstOrDefault().Text;
             }
@@ -431,11 +427,11 @@ namespace MeisterReporting
         protected void GridView2_RowEditing(object sender, GridViewEditEventArgs e)
         {
             GridView2.EditIndex = e.NewEditIndex;
-            List<ParameterOut> parameters = Session[gridView2] as List<ParameterOut>;
+            List<SdkModel.ParameterOut> parameters = Session[gridView2] as List<SdkModel.ParameterOut>;
             var v = parameters.ElementAt(GridView2.EditIndex);
             if (v != null)
             {
-                BindData<List<ParameterOut>>(GridView2, parameters, gridView2);
+                BindData<List<SdkModel.ParameterOut>>(GridView2, parameters, gridView2);
                 Freshup(GridView4);
             }
             VariantSave.Visible = true;
@@ -459,7 +455,7 @@ namespace MeisterReporting
         protected void GridView2_RowUpdating(object sender, GridViewUpdateEventArgs e)
         {
             GridViewRow gvr = GridView2.Rows[e.RowIndex];
-            List<ParameterOut> parameters = Session[gridView2] as List<ParameterOut>;
+            List<SdkModel.ParameterOut> parameters = Session[gridView2] as List<SdkModel.ParameterOut>;
             var v = parameters.ElementAt(GridView2.EditIndex);
             if (v != null)
             {
@@ -486,7 +482,7 @@ namespace MeisterReporting
                     v.Low= GrabGridUpdate(gvr, 6);
                     v.High = GrabGridUpdate(gvr, 7);
                     GridView2.EditIndex = -1;
-                    BindData<List<ParameterOut>>(GridView2,parameters, gridView2);
+                    BindData<List<SdkModel.ParameterOut>>(GridView2,parameters, gridView2);
                     Session[SesHasParm] = true;
                     BeforeB2.Visible = true;
                     Session[ParmsAltered] = ParmChanges;
@@ -526,9 +522,9 @@ namespace MeisterReporting
             {
                 Grid3.Visible = true;
                 Button7.Enabled = false;
-                MyReportsRequest req = new MyReportsRequest();
+                SdkModel.MyReportsRequest req = new SdkModel.MyReportsRequest();
                 req.userName = GetUserName();
-                MyReportsResponse myReports = Model.RunMeister<MyReportsRequest, MyReportsResponse>(req,"Meister.Reporting.MyReports", out MeisterException);
+                SdkModel.MyReportsResponse myReports = sdk.reportSdk.MyReports(req);
                 List <MyReportUI> reps  = new List<MyReportUI>();
                 if (myReports != null && myReports.MyReports != null)
                 {
@@ -590,7 +586,7 @@ namespace MeisterReporting
         protected void GridView3_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
             if (DoingSchedule())
-                NewPage<Schedule>(GridView3, e.NewPageIndex, SaveSchedule);
+                NewPage<SdkModel.Schedule>(GridView3, e.NewPageIndex, SaveSchedule);
             else
                 NewPage<MyReportUI>(GridView3, e.NewPageIndex, gridView3);
 
@@ -598,12 +594,12 @@ namespace MeisterReporting
 
         protected void GridView2_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
-            NewPage<ParameterOut>(GridView2, e.NewPageIndex, gridView2);
+            NewPage<SdkModel.ParameterOut>(GridView2, e.NewPageIndex, gridView2);
         }
 
         protected void GridView1_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
-            NewPage<MyReport>(GridView1, e.NewPageIndex, gridView1);
+            NewPage<SdkModel.MyReport>(GridView1, e.NewPageIndex, gridView1);
         }
 
 
@@ -631,7 +627,7 @@ namespace MeisterReporting
                         string uuid = GridView3.Rows[row.RowIndex].Cells[5].Text;
                         row.BackColor = ColorTranslator.FromHtml("#A1DCF2");
                         row.ToolTip = "Retrieving Schedule for user";
-                        Schedule schedule = FromSchedule(uuid);
+                        SdkModel.Schedule schedule = FromSchedule(uuid);
                         if (schedule != null)
                         {
                             Button8.Enabled = true;
@@ -672,13 +668,13 @@ namespace MeisterReporting
                         row.BackColor = ColorTranslator.FromHtml("#A1DCF2");
                         row.ToolTip = "Retrieving Report";
                         Thread.Sleep(100);
-                        ReadReportRequest req = new ReadReportRequest();
+                        SdkModel.ReadReportRequest req = new SdkModel.ReadReportRequest();
                         req.Guid= GridView3.Rows[row.RowIndex].Cells[1].Text;
                         req.KeepReport = true;
-                        ReadReportResponse readReport = Model.RunMeister<ReadReportRequest, ReadReportResponse>(req, "Meister.Reporting.Retrieve", out MeisterException);
+                        var readReport = sdk.reportSdk.ReadReport(req);
                         if (readReport != null)
                         {
-                            ThisReport rs = readReport.Report;
+                            SdkModel.ThisReport rs = readReport.Report;
                             if (rs != null)
                                 if (!string.IsNullOrEmpty(rs.Edm))
                                 {
@@ -702,9 +698,9 @@ namespace MeisterReporting
             }
         }
 
-        private Schedule FromSchedule(string uuid)
+        private SdkModel.Schedule FromSchedule(string uuid)
         {
-            List<Schedule> abl = Session[SaveSchedule] as List<Schedule>;
+            List<SdkModel.Schedule> abl = Session[SaveSchedule] as List<SdkModel.Schedule>;
             if (abl != null)
                 return (from ab1 in abl where (ab1.Guid == uuid) select ab1).FirstOrDefault();
             return null;
@@ -741,10 +737,10 @@ namespace MeisterReporting
                 {
                     row.BackColor = ColorTranslator.FromHtml("#A1DCF2");
                     row.ToolTip = "Variant Selected";
-                    ReportParametersRequest req = new ReportParametersRequest();
+                    SdkModel.ReportParametersRequest req = new SdkModel.ReportParametersRequest();
                     req.ReportName = GridView1.Rows[GridView1.SelectedIndex].Cells[1].Text;
                     req.VariantName = GridView4.Rows[row.RowIndex].Cells[1].Text;
-                    ReportParametersResponse reportParameters = Model.RunMeister<ReportParametersRequest, ReportParametersResponse>(req, @"Meister.Reporting.Report.Parameters", out MeisterException);
+                    var reportParameters = sdk.reportSdk.ReportParameters(req);
                     FilldParameterList(reportParameters, GridView2, GridView4.Rows[row.RowIndex].Cells[1].Text);
                     Session[VarParCnt] = reportParameters;
                     VariantSave.Visible = false;
@@ -758,15 +754,15 @@ namespace MeisterReporting
             }
         }
 
-        private void FilldParameterList(ReportParametersResponse reportParameters, GridView grv, string varname)
+        private void FilldParameterList(SdkModel.ReportParametersResponse reportParameters, GridView grv, string varname)
         {
-            List<ParameterOut> binds = reportParameters.ReportMetadata.ReportParameters;
-            List<ParameterOut> parameters = new List<ParameterOut>();
-            MeisterReporting.VariantOut vsel = (from x in reportParameters.ReportMetadata.Variants where (x.Name == varname) select x).FirstOrDefault();
+            List<SdkModel.ParameterOut> binds = reportParameters.ReportMetadata.ReportParameters;
+            List<SdkModel.ParameterOut> parameters = new List<SdkModel.ParameterOut>();
+            SdkModel.VariantOut vsel = (from x in reportParameters.ReportMetadata.Variants where (x.Name == varname) select x).FirstOrDefault();
             if (vsel.Parameters != null && binds != null)
                 foreach (var v0 in binds)
                 {
-                    ParameterOut pout = new ParameterOut();
+                    SdkModel.ParameterOut pout = new SdkModel.ParameterOut();
                     var v9 = (from x1 in vsel.Parameters where (x1.SelName == v0.SelName) select x1).FirstOrDefault();
                     if (v9 != null)
                     {
@@ -794,7 +790,7 @@ namespace MeisterReporting
                     parameters.Add(pout);
                 }
             Session[ReportParameterResponse] = reportParameters;
-            BindData<List<ParameterOut>>(grv, parameters, gridView2);
+            BindData<List<SdkModel.ParameterOut>>(grv, parameters, gridView2);
         }
 
         private string CheckContent(string s)
@@ -854,9 +850,9 @@ namespace MeisterReporting
                     return;
                 }
             }
-            ReportParametersResponse reportParameters = Session[ReportParameterResponse] as ReportParametersResponse;
-            UpsertVariantRequest req = new UpsertVariantRequest();
-            req.Parameters = new List<MeisterReporting.Parameter>();
+            SdkModel.ReportParametersResponse reportParameters = Session[ReportParameterResponse] as SdkModel.ReportParametersResponse;
+            SdkModel.UpsertVariantRequest req = new SdkModel.UpsertVariantRequest();
+            req.Parameters = new List<SdkModel.Parameter>();
             ParmChanges = Session[ParmsAltered] as List<string>;
             foreach (GridViewRow g0 in GridView2.Rows)
                 if (ParmChanges.Contains(g0.Cells[1].Text))
@@ -873,7 +869,7 @@ namespace MeisterReporting
                                 }
                             }
                         }
-                        MeisterReporting.Parameter parameter = new MeisterReporting.Parameter();
+                        SdkModel.Parameter parameter = new SdkModel.Parameter();
                         parameter.SelName = g0.Cells[1].Text;
                         parameter.Sign = "I";
                         parameter.Kind = SAPKind(g0.Cells[2].Text);
@@ -888,7 +884,7 @@ namespace MeisterReporting
             req.ReportName = GridView1.Rows[GridView1.SelectedIndex].Cells[2].Text;
             req.VariantName = TextBox4.Text.ToUpper();
             req.Description = TextBox5.Text;
-            UpsertVariantResponse response = Model.RunMeister<UpsertVariantRequest, UpsertVariantResponse>(req, @"Meister.Reporting.Variant.Upsert", out MeisterException);
+            var response = sdk.reportSdk.UpsertVariant(req);
             SetMessage("Variant Saved ...");
         }
 
@@ -1042,17 +1038,17 @@ namespace MeisterReporting
                 Button4.Enabled = false;
                 Grid3.Visible = true;
                 GridView3.Caption = "Schedule for " + GetUserName();
-                SchedulerRequest req = new SchedulerRequest();
+                SdkModel.SchedulerRequest req = new SdkModel.SchedulerRequest();
                 req.UserName = GetUserName();
                 req.Option = "R";
-                SchedulerResponse schedulerResponse = Model.RunMeister<SchedulerRequest, SchedulerResponse>(req, @"Meister.Reporting.Scheduler", out MeisterException);
-                List<Schedule> reps = new List<Schedule>();
-                BindData<List<Schedule>>(GridView3, reps, SaveSchedule);
+                var schedulerResponse = sdk.reportSdk.RunScheduler(req);
+                List<SdkModel.Schedule> reps = new List<SdkModel.Schedule>();
+                BindData<List<SdkModel.Schedule>>(GridView3, reps, SaveSchedule);
                 if (schedulerResponse != null && schedulerResponse.Schedules != null)
                 {
                     foreach (var l1 in schedulerResponse.Schedules)
                     {
-                        var ab = new Schedule();
+                        var ab = new SdkModel.Schedule();
                         ab.NickName = l1.NickName;
                         ab.ScheduleType = GetScheduleType(l1.ScheduleType);
                         ab.TimeSlot = l1.TimeSlot;
@@ -1064,7 +1060,7 @@ namespace MeisterReporting
                         reps.Add(ab);
                     }
                     GridView3.Caption = "Schedule found for user";
-                    BindData<List<Schedule>>(GridView3, reps, SaveSchedule);
+                    BindData<List<SdkModel.Schedule>>(GridView3, reps, SaveSchedule);
                 }
                 ReportsShown = true;
                 Session[ShowSchedule] = true;
@@ -1149,10 +1145,10 @@ namespace MeisterReporting
         protected void Button8_Click(object sender, EventArgs e)
         {
             var update = false;
-            SchedulerRequest req = new SchedulerRequest();
+            SdkModel.SchedulerRequest req = new SdkModel.SchedulerRequest();
             if (DoingSchedule())
             {
-                Schedule ab = FromSchedule(Session[SelectedSchedule] as string);
+                SdkModel.Schedule ab = FromSchedule(Session[SelectedSchedule] as string);
                 if (ab != null)
                 {
                     req.Option = "U";
@@ -1181,10 +1177,10 @@ namespace MeisterReporting
                 req.Schedule.Variant = GridView4.Rows[GridView4.SelectedIndex].Cells[1].Text;
             if (!string.IsNullOrEmpty(req.Schedule.Variant))
             {
-                req.Schedule.Parameters = new List<MeisterReporting.Parameter>();
-                MeisterReporting.Parameter p = new MeisterReporting.Parameter();
+                req.Schedule.Parameters = new List<SdkModel.Parameter>();
+                SdkModel.Parameter p = new SdkModel.Parameter();
             }
-            SchedulerResponse schedulerResponse = Model.RunMeister<SchedulerRequest, SchedulerResponse>(req, "Meister.Reporting.Scheduler", out MeisterException);
+            var schedulerResponse = sdk.reportSdk.RunScheduler(req);
             if (update)
                 SetMessage("Schedule " + req.Schedule.NickName + " changed successfully");
             else
@@ -1249,10 +1245,10 @@ namespace MeisterReporting
                         uuid = GridView3.Rows[row.RowIndex].Cells[5].Text;
                 if (uuid != string.Empty)
                 {
-                    Schedule ab = FromSchedule(uuid);
+                    SdkModel.Schedule ab = FromSchedule(uuid);
                     if (ab != null)
                     {
-                        SchedulerRequest req = new SchedulerRequest();
+                        SdkModel.SchedulerRequest req = new SdkModel.SchedulerRequest();
                         req.Schedule = ab;
                         req.Option = "D";
                         Session[SavedScheduleForUpdate] = req;
@@ -1266,13 +1262,13 @@ namespace MeisterReporting
         {
             if (CheckBox2.Checked == true)
             {
-                SchedulerRequest req = Session[SavedScheduleForUpdate] as SchedulerRequest;
+                SdkModel.SchedulerRequest req = Session[SavedScheduleForUpdate] as SdkModel.SchedulerRequest;
                 if (req != null)
                 {
                     CheckBox2.Visible = false;
                     CheckBox2.Checked = false;
                     Button9.Visible = false;
-                    SchedulerResponse schedulerResponse = Model.RunMeister<SchedulerRequest, SchedulerResponse>(req, "Meister.Reporting.Scheduler", out MeisterException);
+                    var schedulerResponse = sdk.reportSdk.RunScheduler(req);
                     SetMessage("Schedule deleted");
                     Grid3.Visible = false;
                     BeforeB2.Visible = false;
@@ -1342,6 +1338,12 @@ namespace MeisterReporting
 
         protected void GridView1_Unload(object sender, EventArgs e)
         {
+        }
+
+        protected void Button10_Click(object sender, EventArgs e)
+        {
+            Session.Abandon();
+            this.Response.Redirect("~/login.aspx");
         }
     }
 }

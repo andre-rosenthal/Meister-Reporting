@@ -1,4 +1,5 @@
-﻿using MeisterReporting;
+﻿using MeisterCore.Support;
+using MeisterReporting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,8 +21,8 @@ namespace MeisterReporting
         private const string sap_client = "sap-client";
         private const string gtw_url = "gateway_url";
         private const string userName = "UserName";
+        private const string the_sdk = "SDK";
         private const string password = "sap_psw";
-        private const string model = "model";
         private const string od4 = "od4";
 
         protected void Page_Load(object sender, EventArgs e)
@@ -121,7 +122,6 @@ namespace MeisterReporting
         }
         protected void LoginButton_Click(object sender, EventArgs e)
         {
-            Model m = new Model();
             string us = RetrieveContent(this.UserName.Text, userName);
             us = us.ToUpper();
             string pw = RetrieveContent(this.Password.Text, password);
@@ -131,22 +131,25 @@ namespace MeisterReporting
             bool.TryParse(od, out bod4);
             Uri u = new Uri(RetrieveContent(this.SAPGateway.Text, gtw_url, true));
             if (!(string.IsNullOrEmpty(us) && string.IsNullOrEmpty(pw) && string.IsNullOrEmpty(cl) && string.IsNullOrEmpty(u.AbsoluteUri)))
-                if (m.Controller.Authenticate(us, pw, u, cl, bod4))
+            {
+                SDK sdk = new SDK(us, MeisterSupport.ToSecureString(pw), u, cl);
+                if (sdk.Authenticate().StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     this.isAuthenticated = true;
-                    Session[model] = m;
                     Session[userName] = us;
                     Session[authenticated] = true;
                     Session[od4] = bod4;
                     Session[password] = pw;
                     Session[sap_client] = cl;
                     Session[gtw_url] = u.AbsoluteUri;
+                    Session[the_sdk] = sdk;
                     this.Response.Redirect("~/main.aspx");
                 }
                 else
                 {
-                    this.FailureText.Text = "System unavailable";
+                    this.FailureText.Text = sdk.HttpsStatusDescription();
                 }
+            }
         }
 
         private string RetrieveContent(string t, string a, bool IsUrl = false, bool IsBool = false)
