@@ -39,7 +39,7 @@
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <asp:Button ID="Button4" runat="server" Text="Run a Report" OnClick="Button4_Click" CssClass="auto-style1" />
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <asp:Button ID="Button10" runat="server" CssClass="auto-style1" OnClick="Button10_Click" Text="Loggof" Width="127px" />
+        <asp:Button ID="Button10" runat="server" CssClass="auto-style1" OnClick="Button10_Click" Text="Logoff" Width="127px" />
         <br />
         <br />
         <div id="Grid3" runat="server">
