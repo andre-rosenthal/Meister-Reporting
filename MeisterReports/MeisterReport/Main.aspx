@@ -30,7 +30,6 @@
             <asp:Label ID="UrlConn" runat="server" Font-Bold="True" Font-Italic="True" Text="&gt;&gt;&gt; url &lt;&lt;&lt;&lt;&lt;"></asp:Label>
         </h2>
         <h2>Select an option:</h2>
-        <asp:Label ID="DefaultLbl" runat="server" Visible="False"></asp:Label>
         <br />
         <br />
         <asp:Button ID="Button7" runat="server" OnClick="Button7_Click" Text="Show Schedule" CssClass="auto-style1" />

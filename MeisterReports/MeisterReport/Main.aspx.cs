@@ -461,13 +461,13 @@ namespace MeisterReporting
             {
                 if (IsItValid(GrabGridUpdate(gvr, 7)))
                 {
-                    if (!GetOptions(true).Contains(GrabGridUpdate(gvr, 5)))
+                    if (v.Kind == "S" && !GetOptions(true).Contains(GrabGridUpdate(gvr, 5)))
                     {
                         ShowAlert(DoMessage(GrabGridUpdate(gvr, 5), ValidOptionsH, true));
                         e.Cancel = true;
                     }
                 }
-                else if (!GetOptions(false).Contains(GrabGridUpdate(gvr, 5)))
+                else if (v.Kind == "S" && !GetOptions(false).Contains(GrabGridUpdate(gvr, 5)))
                 {
                     ShowAlert(DoMessage(GrabGridUpdate(gvr, 5), ValidOptionsNH, true));
                     e.Cancel = true;
@@ -479,10 +479,10 @@ namespace MeisterReporting
                         ParmChanges = new List<string>();
                     ParmChanges.Add(v.SelName);
                     v.Option = GrabGridUpdate(gvr, 5);
-                    v.Low= GrabGridUpdate(gvr, 6);
+                    v.Low = GrabGridUpdate(gvr, 6);
                     v.High = GrabGridUpdate(gvr, 7);
                     GridView2.EditIndex = -1;
-                    BindData<List<SdkModel.ParameterOut>>(GridView2,parameters, gridView2);
+                    BindData<List<SdkModel.ParameterOut>>(GridView2, parameters, gridView2);
                     Session[SesHasParm] = true;
                     BeforeB2.Visible = true;
                     Session[ParmsAltered] = ParmChanges;
@@ -506,7 +506,7 @@ namespace MeisterReporting
         {
             GridView2.SelectedIndex = -1;
             GridView2.EditIndex = -1;
-            RebindData<List<Parameter>>(GridView2, gridView2);
+            RebindData<List<SdkModel.ParameterOut>>(GridView2, gridView2);
         }
 
         protected void Button3_Click(object sender, EventArgs e)
