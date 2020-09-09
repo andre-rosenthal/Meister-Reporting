@@ -517,10 +517,12 @@ namespace MeisterReporting
                 Session[SesShowRep] = false;
                 Button7.Enabled = true;
                 Grid3.Visible = false;
+                CheckBox3.Visible = false;
             }
             else
             {
                 Grid3.Visible = true;
+                CheckBox3.Visible = true;
                 Button7.Enabled = false;
                 SdkModel.MyReportsRequest req = new SdkModel.MyReportsRequest();
                 req.userName = GetUserName();
@@ -670,7 +672,7 @@ namespace MeisterReporting
                         Thread.Sleep(100);
                         SdkModel.ReadReportRequest req = new SdkModel.ReadReportRequest();
                         req.Guid= GridView3.Rows[row.RowIndex].Cells[1].Text;
-                        req.KeepReport = true;
+                        req.KeepReport = !CheckBox3.Checked;
                         var readReport = sdk.reportSdk.ReadReport(req);
                         if (readReport != null)
                         {

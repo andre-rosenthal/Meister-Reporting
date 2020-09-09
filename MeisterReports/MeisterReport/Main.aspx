@@ -42,6 +42,8 @@
         <br />
         <br />
         <div id="Grid3" runat="server">
+            <asp:CheckBox ID="CheckBox3" runat="server" Checked="True" Text="Delete Report after download" />
+            <br />
             <br />
             <asp:GridView ID="GridView3" runat="server" AutoGenerateSelectButton="True" Caption="Reports found for user"
                 AllowPaging="True" CellPadding="4" ForeColor="#333333" GridLines="None" OnPageIndexChanged="GridView3_PageIndexChanged"
