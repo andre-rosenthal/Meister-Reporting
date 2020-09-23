@@ -7,7 +7,7 @@
     <title></title>
     <style type="text/css">
         .auto-style2 {
-            width: 957px;
+            width: 712px;
         }
         .auto-style11 {
             height: 25px;
@@ -25,13 +25,16 @@
             width: 478px;
             text-align: left;
         }
+        .auto-style15 {
+            width: 291px;
+        }
     </style>
 </head>
-<body style="width: 972px; height: 231px">
+<body style="width: 958px; height: 418px">
     <form id="form1" runat="server">
                     <table cellpadding="4" cellspacing="0" style="border-collapse:collapse;">
                         <tr>
-                            <td>
+                            <td class="auto-style15">
                                 <table cellpadding="0" class="auto-style2">
                                     <tr>
                                         <td align="center" colspan="2" style="color:White;background-color:#507CD1;font-size:0.9em;font-weight:bold;">Log In</td>
@@ -64,18 +67,19 @@
                                         </td>
                                     </tr>
                                      <tr>
-                                        <td class="auto-style11">
+                                        <td class="auto-style13">
                                             <asp:Label ID="Label2" runat="server" AssociatedControlID="SAPGateway">Gateway:</asp:Label>
                                         </td>
-                                        <td class="auto-style12">
-                                            <asp:TextBox ID="SAPGateway" runat="server" Font-Size="0.8em" TextMode="Url" OnTextChanged="SAPGateway_TextChanged" Width="814px" Height="29px"></asp:TextBox>
+                                        <td class="auto-style14">
+                                            <asp:TextBox ID="SAPGateway" runat="server" Font-Size="0.8em" TextMode="Url" OnTextChanged="SAPGateway_TextChanged" Width="800px" Height="25px"></asp:TextBox>
                                             <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ControlToValidate="SAPGateway" ErrorMessage="SAP Gateway URL is required." ToolTip="SAP Gateway URL is required." ValidationGroup="Login1">*</asp:RequiredFieldValidator>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td colspan="2">
-                                            Language:
-                                            <asp:DropDownList ID="LoginLanguage" runat="server" Width="277px">
+                                            Language:&nbsp;&nbsp;
+                                            <br />
+&nbsp;<asp:DropDownList ID="LoginLanguage" runat="server" Width="277px">
                                             </asp:DropDownList>
                                             <br />
                                             <asp:CheckBox ID="OD4Mode" runat="server" Text="Gateway is running OData V4" OnCheckedChanged="OD4Mode_CheckedChanged" />
