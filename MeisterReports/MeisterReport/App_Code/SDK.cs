@@ -19,16 +19,17 @@ namespace MeisterReporting
         public MeisterSDKReporting.MeisterSDKReporting reportSdk { get; } = MeisterSDKReporting.MeisterSDKReporting.Instance; public SDK()
         {
         }
-        public SDK(String userName, SecureString password, Uri gateway, string client)
+        public SDK(String userName, SecureString password, Uri gateway, string client, MeisterSupport.Languages language = MeisterSupport.Languages.CultureBased)
         {
             var credentials = Encoding.ASCII.GetBytes(userName + ":" + MeisterSupport.ToUnSecureString(password));
             reportSdk.AuthenticationHeaderValue = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(credentials));
             reportSdk.Gateway = gateway;
             reportSdk.Client = client;
+            reportSdk.Language = language;
         }
         public MeisterStatus Authenticate()
         {
-            reportSdk.Authenticate();
+            reportSdk.Authenticate(reportSdk.Language);
             return reportSdk.MeisterStatus;
         }
         public string HttpsStatusDescription()

@@ -16,6 +16,7 @@ namespace MeisterReporting
         private string sapClient { get; set; }
         private Uri gatewayUrl { get; set; }
         private bool isAuthenticated { get; set; }
+        private MeisterSupport.Languages Language { get; set; }
         public bool runningOD4 { get; private set; }
         private const string authenticated = "authenticated";
         private const string sap_client = "sap-client";
@@ -23,16 +24,20 @@ namespace MeisterReporting
         private const string userName = "UserName";
         private const string the_sdk = "SDK";
         private const string password = "sap_psw";
+        private const string language = "language";
         private const string od4 = "od4";
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!this.IsPostBack)
             {
+                this.LoginLanguage.DataSource = Enum.GetNames(typeof(MeisterSupport.Languages));
+                this.LoginLanguage.DataBind();
                 SetLoginField(sap_client, ref this.SAPClient);
                 SetLoginField(gtw_url, ref this.SAPGateway, true);
                 SetLoginField(userName, ref this.UserName);
                 SetLoginField(password, ref this.Password);
+                Session[language] = this.LoginLanguage.SelectedValue;
                 string od = Application[od4] as string;
                 bool bod4 = false;
                 bool.TryParse(od, out bod4);
@@ -127,12 +132,14 @@ namespace MeisterReporting
             string pw = RetrieveContent(this.Password.Text, password);
             string cl = RetrieveContent(this.SAPClient.Text, sap_client);
             string od = RetrieveContent(this.OD4Mode.Checked.ToString(), od4, false, true);
+            MeisterSupport.Languages lang;
+            Enum.TryParse(this.LoginLanguage.SelectedValue, out lang);
             bool bod4 = false;
             bool.TryParse(od, out bod4);
             Uri u = new Uri(RetrieveContent(this.SAPGateway.Text, gtw_url, true));
             if (!(string.IsNullOrEmpty(us) && string.IsNullOrEmpty(pw) && string.IsNullOrEmpty(cl) && string.IsNullOrEmpty(u.AbsoluteUri)))
             {
-                SDK sdk = new SDK(us, MeisterSupport.ToSecureString(pw), u, cl);
+                SDK sdk = new SDK(us, MeisterSupport.ToSecureString(pw), u, cl,lang);
                 if (sdk.Authenticate().StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     this.isAuthenticated = true;
@@ -143,6 +150,7 @@ namespace MeisterReporting
                     Session[sap_client] = cl;
                     Session[gtw_url] = u.AbsoluteUri;
                     Session[the_sdk] = sdk;
+                    Session[language] = Language.ToString();
                     this.Response.Redirect("~/main.aspx");
                 }
                 else
