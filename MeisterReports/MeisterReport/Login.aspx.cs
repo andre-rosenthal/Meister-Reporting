@@ -31,7 +31,7 @@ namespace MeisterReporting
         {
             if (!this.IsPostBack)
             {
-                this.LoginLanguage.DataSource = Enum.GetNames(typeof(MeisterSupport.Languages));
+                this.LoginLanguage.DataSource = System.Enum.GetNames(typeof(MeisterSupport.Languages));
                 this.LoginLanguage.DataBind();
                 SetLoginField(sap_client, ref this.SAPClient);
                 SetLoginField(gtw_url, ref this.SAPGateway, true);
@@ -133,7 +133,7 @@ namespace MeisterReporting
             string cl = RetrieveContent(this.SAPClient.Text, sap_client);
             string od = RetrieveContent(this.OD4Mode.Checked.ToString(), od4, false, true);
             MeisterSupport.Languages lang;
-            Enum.TryParse(this.LoginLanguage.SelectedValue, out lang);
+            Enum.TryParse<MeisterSupport.Languages>(this.LoginLanguage.SelectedValue, out lang);
             bool bod4 = false;
             bool.TryParse(od, out bod4);
             Uri u = new Uri(RetrieveContent(this.SAPGateway.Text, gtw_url, true));
