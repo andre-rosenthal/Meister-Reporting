@@ -41,7 +41,7 @@ namespace MeisterReporting
                 string od = Application[od4] as string;
                 bool bod4 = false;
                 bool.TryParse(od, out bod4);
-                this.OD4Mode.Checked = bod4;
+                this.OD4Mode.Checked = bod4;     
                 var v = Session[authenticated] as string;
                 bool b = false;
                 if (bool.TryParse(v, out b))
