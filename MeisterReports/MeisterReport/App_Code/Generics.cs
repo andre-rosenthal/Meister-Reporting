@@ -7,7 +7,7 @@ using System.Linq;
 using System.Web;
 
 namespace MeisterReporting
-{
+{     
     internal static class Converter
     {
         public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
